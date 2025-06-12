@@ -74,30 +74,6 @@ Aplikasi akan berjalan di `http://localhost:5000`
 6. **Preferences** → User mengisi preferensi pasangan
 7. **Match Feed** → Menampilkan calon pasangan (next step)
 
-## Sample Data
-
-Setelah menjalankan `python database_setup.py init`, tersedia sample data:
-
-- **Admin**: admin@heartlink.com / admin123
-- **User 1**: john.doe@example.com / password123
-- **User 2**: jane.smith@example.com / password123
-
-## Development
-
-### Database Commands
-```bash
-# Inisialisasi database dengan sample data
-python database_setup.py init
-
-# Hanya buat tables
-python database_setup.py tables
-
-# Hanya buat sample data
-python database_setup.py sample
-
-# Reset database (HATI-HATI: Menghapus semua data)
-python database_setup.py reset
-```
 
 ### Environment Variables
 - `FLASK_CONFIG`: development/production
