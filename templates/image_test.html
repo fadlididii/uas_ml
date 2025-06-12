@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Preferences Test - Dating App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom/preferences.css') }}">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+   </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">HeartLink</div>
+    </header>
+
+    <!-- Progress Flow -->
+    <div class="progress-flow">
+        <div class="flow-step">
+            <div class="step-circle completed">1</div>
+            <div class="step-text">Preferences<br>(Q 1-13)</div>
+            <div class="step-connector"></div>
+        </div>
+        <div class="flow-step">
+            <div class="step-circle completed">2</div>
+            <div class="step-text">Text Preferences</div>
+            <div class="step-connector"></div>
+        </div>
+        <div class="flow-step">
+            <div class="step-circle active">3</div>
+            <div class="step-text">Visual Test</div>
+            <div class="step-connector"></div>
+        </div>
+        <div class="flow-step">
+            <div class="step-circle inactive">4</div>
+            <div class="step-text">Match</div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <div class="preferences-card">
+            <div class="card-header">
+                <h1 class="card-title">🖼️ Visual Preferences Test</h1>
+                <p class="card-subtitle">Help us understand your visual preferences to find your perfect match</p>
+            </div>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST">
+                <div class="question-section active">
+                    <div class="question-group">
+                        <h3 class="question-title">Choose Your Visual Preference</h3>
+                        <p class="question-subtitle">Select the visual style that appeals to you most. This will help us find matches with similar aesthetic preferences.</p>
+                        
+                        <div class="image-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin: 2rem 0;">
+                            {% for i in range(10) %}
+                            <div class="image-option" style="position: relative; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: all 0.3s ease;">
+                                <input type="radio" 
+                                       name="preferred_cluster_id" 
+                                       value="{{ i }}" 
+                                       id="cluster_{{ i }}"
+                                       {% if existing_test and existing_test.preferred_cluster_id == i %}checked{% endif %}
+                                       style="position: absolute; top: 10px; right: 10px; transform: scale(1.5); z-index: 10;">
+                                <label for="cluster_{{ i }}" style="cursor: pointer; display: block;">
+                                    <img src="{{ url_for('static', filename='images/clusters/' + target_gender + '/cluster_' + i|string + '.jpg') }}" 
+                                         alt="Visual Style {{ i + 1 }}"
+                                         style="width: 100%; height: 200px; object-fit: cover; transition: transform 0.3s ease;"
+                                         onerror="this.src='{{ url_for('static', filename='img/avatar1.png') }}'; this.style.filter='grayscale(100%)';">
+                                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.7)); color: white; padding: 1rem; text-align: center;">
+                                        <strong>Style {{ i + 1 }}</strong>
+                                    </div>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div style="background: rgba(69, 183, 209, 0.1); border: 1px solid rgba(69, 183, 209, 0.3); border-radius: 15px; padding: 1.5rem; margin: 2rem 0;">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; color: #45B7D1; font-weight: 500;">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Choose the visual style that represents your preference in potential matches.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Navigation -->
+                <div class="navigation">
+                    <button type="button" class="nav-button secondary" onclick="window.location.href='{{ url_for('text_test') }}'">
+                        <i class="fas fa-arrow-left"></i> Back to Text Test
+                    </button>
+                    <button type="submit" class="nav-button primary">
+                        Save Preference & Continue <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

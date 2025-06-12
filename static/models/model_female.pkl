@@ -1,0 +1,2 @@
+# Placeholder for female clustering model
+# Replace this with actual trained clustering model (pickle file)

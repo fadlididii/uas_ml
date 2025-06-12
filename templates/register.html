@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - HeartLink</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="static/css/custom/register.css">
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-form-wrapper">
+            <h2>Create Your Account</h2>
+            <p>Join HeartLink and find your perfect match</p>
+            
+            <form id="registerForm" class="register-form" action="{{ url_for('register') }}" method="POST">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        required
+                        placeholder="Enter your email"
+                    >
+                </div>
+
+                <div class="form-group position-relative">
+                    <label for="password">Password</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        required
+                        minlength="6"
+                        placeholder="Create a strong password (min 6 characters)"
+                    >
+                    <span class="password-toggle password-toggle-register">👁️</span>
+                </div>
+
+                <div class="form-group position-relative">
+                    <label for="confirm_password">Confirm Password</label>
+                    <input 
+                        type="password" 
+                        id="confirm_password" 
+                        name="confirm_password" 
+                        required
+                        placeholder="Repeat your password"
+                    >
+                    <span class="password-toggle password-toggle-confirm">👁️</span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Create Account</button>
+                
+                <div class="form-note">
+                    <p><small>After registration, you'll be able to complete your profile with personal details and preferences.</small></p>
+                </div>
+            </form>
+            <p class="login-link">
+                Already have an account? 
+                <a href="#" id="showLoginModal" class="text-primary">Login here</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal-overlay hidden">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Login</h2>
+                <button class="modal-close" id="closeLoginModal">&times;</button>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="login_email">Email</label>
+                    <input 
+                        type="email" 
+                        id="login_email" 
+                        name="email" 
+                        required
+                        placeholder="Enter your email"
+                    >
+                </div>
+                <div class="form-group position-relative">
+                    <label for="login_password">Password</label>
+                    <input 
+                        type="password" 
+                        id="login_password" 
+                        name="password" 
+                        required
+                        placeholder="Enter your password"
+                    >
+                    <span class="password-toggle password-toggle-login">👁️</span>
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript disabled for form submission - using standard HTML form -->
+    <!-- <script src="/static/js/main.js"></script> -->
+</body>
+</html>

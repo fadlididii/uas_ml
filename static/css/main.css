@@ -1,0 +1,118 @@
+/* Main CSS File - Import all components */
+
+/* Base Styles */
+@import url('./base/variables.css');
+@import url('./base/reset.css');
+@import url('./base/typography.css');
+
+/* Layout Components */
+@import url('./layout/header.css');
+@import url('./layout/hero.css');
+@import url('./layout/footer.css');
+
+/* UI Components */
+@import url('./components/buttons.css');
+@import url('./components/forms.css');
+@import url('./components/modals.css');
+@import url('./components/toast.css');
+
+/* Utilities */
+@import url('./utilities/utilities.css');
+
+/* Page-specific styles */
+@import url('./pages/welcome.css');
+@import url('./pages/preferences.css');
+
+/* Global overrides and custom styles */
+body {
+    font-family: var(--font-family-base);
+    line-height: var(--line-height-base);
+    color: var(--color-text);
+    background-color: var(--color-background);
+    transition: background-color var(--transition-base), color var(--transition-base);
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Focus styles for accessibility */
+*:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Loading state */
+.loading {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid var(--color-primary);
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Error states */
+.error {
+    color: var(--color-error);
+    border-color: var(--color-error);
+}
+
+.success {
+    color: var(--color-success);
+    border-color: var(--color-success);
+}
+
+.warning {
+    color: var(--color-warning);
+    border-color: var(--color-warning);
+}
+
+.info {
+    color: var(--color-info);
+    border-color: var(--color-info);
+}
+
+/* Dark mode toggle */
+[data-theme="dark"] {
+    --color-primary: var(--color-primary-dark);
+    --color-secondary: var(--color-secondary-dark);
+    --color-background: var(--color-background-dark);
+    --color-surface: var(--color-surface-dark);
+    --color-text: var(--color-text-dark);
+    --color-text-muted: var(--color-text-muted-dark);
+    --color-border: var(--color-border-dark);
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    body {
+        background: white !important;
+        color: black !important;
+    }
+    
+    .btn {
+        border: 1px solid black !important;
+    }
+}

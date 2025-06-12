@@ -1,0 +1,126 @@
+
+{% extends "base.html" %}
+
+{% block title %}Find Your Perfect Match{% endblock %}
+
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Dating App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/styles.css">
+
+    <link rel="stylesheet" href="/static/css/custom/index.css">
+</head>
+<body>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Find Your Perfect Match</h1>
+            <p>Join millions of people discovering meaningful connections through our innovative matching system</p>
+            <div class="hero-buttons">
+                <a href="#" id="heroCreateAccountBtn" class="btn btn-primary">Create Account</a>
+                <a href="#" class="btn btn-outline">Learn More</a>
+            </div>
+        </div>
+    </section>
+
+    <div id="loginModal" class="modal-overlay hidden">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Welcome Back</h2>
+                <button id="closeModal" class="modal-close">&times;</button>
+            </div>
+            <form class="login-form" id="login-form" action="{{ url_for('login') }}" method="POST">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email"
+                        placeholder="Enter yout email" 
+                        required
+                    >
+                </div>
+                <div class="form-group password-group">
+                    <label for="password">Password</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password"
+                        placeholder="Enter your password" 
+                        required
+                    >
+                    <span class="password-toggle">👁️</span>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" id="loginSubmitBtn" class="btn btn-primary">Login</button>
+                    <p class="register-link">
+                        Don't have an account? 
+                        <a href="/register" class="text-primary">Register here</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <section class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Why Choose HeartLink</h2>
+                <p>Discover what makes us the preferred choice for meaningful connections</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">💝</div>
+                    <h3>Smart Matching</h3>
+                    <p>Our AI-powered algorithm ensures compatible matches based on your preferences and personality</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Safe &amp; Secure</h3>
+                    <p>Your privacy and security are our top priority with advanced encryption and verification</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💫</div>
+                    <h3>Quality Profiles</h3>
+                    <p>Connect with verified users who are serious about finding meaningful relationships</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <h3>2M+</h3>
+                    <p>Active Users</p>
+                </div>
+                <div class="stat-item">
+                    <h3>500K</h3>
+                    <p>Successful Matches</p>
+                </div>
+                <div class="stat-item">
+                    <h3>98%</h3>
+                    <p>User Satisfaction</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta">
+        <div class="container">
+            <h2>Ready to Find Your Perfect Match?</h2>
+            <p>Join HeartLink today and start your journey to meaningful connections</p>
+            <a href="#" id="ctaGetStartedBtn" class="btn btn-primary">Get Started Now</a>
+        </div>
+    </section>
+
+    <!-- JavaScript disabled for form submission - using standard HTML form -->
+    <!-- <script src="/static/js/main.js"></script> -->
+{% endblock %}

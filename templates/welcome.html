@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to HeartLink</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom/welcome.css') }}">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+
+    <!-- Floating Hearts -->
+    <div class="hearts">
+        <div class="heart">💖</div>
+        <div class="heart">💕</div>
+        <div class="heart">💗</div>
+        <div class="heart">💝</div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">HeartLink</div>
+        <div class="user-greeting">Hello, Sarah! ✨</div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="welcome-container">
+        <div class="welcome-card">
+            <div class="welcome-icon">💝</div>
+            
+            <h1 class="welcome-title">Welcome to HeartLink</h1>
+            
+            <h2 class="welcome-subtitle">Ready to meet your person?</h2>
+            
+            <p class="welcome-description">
+                Your journey to meaningful connections starts here. We'll help you discover amazing people who share your values, interests, and dreams. Let's create something beautiful together!
+            </p>
+
+            <button class="start-button" onclick="startMatching()">
+                Start Matching
+            </button>
+
+            <div class="features-preview">
+                <div class="feature-item">
+                    <span class="feature-emoji">🎯</span>
+                    <div class="feature-text">Smart Matching</div>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-emoji">💬</span>
+                    <div class="feature-text">Great Conversations</div>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-emoji">🌟</span>
+                    <div class="feature-text">Quality Connections</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Smooth entrance animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const welcomeCard = document.querySelector('.welcome-card');
+            welcomeCard.style.opacity = '0';
+            welcomeCard.style.transform = 'translateY(50px)';
+            
+            setTimeout(() => {
+                welcomeCard.style.transition = 'all 0.8s ease';
+                welcomeCard.style.opacity = '1';
+                welcomeCard.style.transform = 'translateY(0)';
+            }, 300);
+
+            // Add sparkle effect on card hover
+            welcomeCard.addEventListener('mouseenter', function() {
+                createSparkles(this);
+            });
+        });
+
+        function createSparkles(element) {
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const sparkle = document.createElement('div');
+                    sparkle.innerHTML = '✨';
+                    sparkle.style.position = 'absolute';
+                    sparkle.style.fontSize = '1rem';
+                    sparkle.style.pointerEvents = 'none';
+                    sparkle.style.zIndex = '1000';
+                    
+                    const rect = element.getBoundingClientRect();
+                    sparkle.style.left = (rect.left + Math.random() * rect.width) + 'px';
+                    sparkle.style.top = (rect.top + Math.random() * rect.height) + 'px';
+                    
+                    document.body.appendChild(sparkle);
+                    
+                    // Animate sparkle
+                    sparkle.animate([
+                        { opacity: 0, transform: 'translateY(0) scale(0)' },
+                        { opacity: 1, transform: 'translateY(-30px) scale(1)' },
+                        { opacity: 0, transform: 'translateY(-60px) scale(0)' }
+                    ], {
+                        duration: 1000,
+                        easing: 'ease-out'
+                    }).onfinish = () => sparkle.remove();
+                }, i * 100);
+            }
+        }
+
+        async function startMatching() {
+            const button = document.querySelector('.start-button');
+            
+            // Button animation
+            button.style.transform = 'scale(0.95)';
+            button.innerHTML = '✨ Starting Your Journey...';
+            
+            try {
+                const token = localStorage.getItem('access_token');
+                if (!token) {
+                    window.location.href = '/';
+                    return;
+                }
+
+                // Check preferences completion status
+                const response = await fetch('http://localhost:8000/preferences/status', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const status = await response.json();
+                    
+                    // Add loading effect
+                    setTimeout(() => {
+                        button.style.background = 'linear-gradient(45deg, #4ECDC4, #45B7D1)';
+                        button.innerHTML = '🚀 Let\'s Go!';
+                    }, 1000);
+
+                    // Navigate based on preferences completion
+                    setTimeout(() => {
+                        if (status.all_completed) {
+                            window.location.href = '/recommendations';
+                        } else {
+                            window.location.href = '/preferences';
+                        }
+                    }, 2000);
+                } else {
+                    throw new Error('Failed to check preferences status');
+                }
+            } catch (error) {
+                console.error('Error checking preferences:', error);
+                // Fallback to preferences page
+                setTimeout(() => {
+                    window.location.href = '/preferences';
+                }, 2000);
+            }
+        }
+
+        // Add interactive cursor effect
+        document.addEventListener('mousemove', function(e) {
+            const cursor = document.querySelector('.cursor-glow');
+            if (!cursor) {
+                const glow = document.createElement('div');
+                glow.className = 'cursor-glow';
+                glow.style.position = 'fixed';
+                glow.style.width = '20px';
+                glow.style.height = '20px';
+                glow.style.borderRadius = '50%';
+                glow.style.background = 'rgba(255, 255, 255, 0.3)';
+                glow.style.pointerEvents = 'none';
+                glow.style.zIndex = '9999';
+                glow.style.transition = 'all 0.1s ease';
+                document.body.appendChild(glow);
+            }
+            
+            const glow = document.querySelector('.cursor-glow');
+            glow.style.left = (e.clientX - 10) + 'px';
+            glow.style.top = (e.clientY - 10) + 'px';
+        });
+    </script>
+</body>
+</html>

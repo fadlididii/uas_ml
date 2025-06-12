@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - HeartLink</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom/preferences.css') }}">
+    
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .main-container {
+            margin-top: 100px;
+            padding: 2rem 0;
+        }
+        
+        .profile-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .profile-form-wrapper {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .page-subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+        
+        .form-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title i {
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-right: 0.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control {
+            border: 2px solid rgba(255, 107, 107, 0.2);
+            border-radius: 10px;
+            padding: 0.75rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #FF6B6B;
+            box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.25);
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 10px;
+            border: 2px solid rgba(255, 107, 107, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .radio-option:hover {
+            background: rgba(255, 107, 107, 0.1);
+            border-color: #FF6B6B;
+        }
+        
+        .radio-option input[type="radio"] {
+            margin: 0;
+        }
+        
+        .range-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        
+        .photo-preview {
+            margin-top: 1rem;
+            text-align: center;
+        }
+        
+        .photo-preview img {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 10px;
+            border: 3px solid #FF6B6B;
+        }
+        
+        .remove-photo-btn {
+            display: block;
+            margin: 1rem auto 0;
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(255, 107, 107, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #495057);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            color: white;
+        }
+        
+        .current-photo {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .current-photo img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #FF6B6B;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-heart"></i> HeartLink
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('match_feed') }}">
+                            <i class="fas fa-users"></i> Matches
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('preferences') }}">
+                            <i class="fas fa-cog"></i> Preferences
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('text_test') }}">
+                            <i class="fas fa-brain"></i> Personality Test
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('image_test') }}">
+                            <i class="fas fa-images"></i> Visual Test
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> Profile
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item active" href="{{ url_for('edit_profile') }}"><i class="fas fa-edit"></i> Edit Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="profile-container">
+            <div class="profile-form-wrapper">
+                <h2 class="page-title">✏️ Edit Your Profile</h2>
+                <p class="page-subtitle">Update your information to keep your profile current!</p>
+                
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                                <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' }}"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                        
+                <form id="editProfileForm" class="profile-form" action="{{ url_for('edit_profile') }}" method="POST" enctype="multipart/form-data">
+                    <!-- Basic Information Section -->
+                    <div class="form-section">
+                        <h3 class="section-title"><i class="fas fa-user"></i>Basic Information</h3>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="firstName" class="form-label">First Name</label>
+                                    <input type="text" id="firstName" name="firstName" class="form-control" 
+                                           value="{{ profile.first_name if profile else '' }}" 
+                                           placeholder="Enter your first name" required>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="lastName" class="form-label">Last Name</label>
+                                    <input type="text" id="lastName" name="lastName" class="form-control" 
+                                           value="{{ profile.last_name if profile else '' }}" 
+                                           placeholder="Enter your last name" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="dateOfBirth" class="form-label">Date of Birth</label>
+                                    <input type="date" id="dateOfBirth" name="dateOfBirth" class="form-control" 
+                                           value="{{ profile.date_of_birth.strftime('%Y-%m-%d') if profile and profile.date_of_birth else '' }}" required>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Gender</label>
+                                    <select id="gender" name="gender" class="form-control" required>
+                                        <option value="">Select Gender</option>
+                                        <option value="male" {{ 'selected' if profile and profile.gender == 'male' else '' }}>Male</option>
+                                        <option value="female" {{ 'selected' if profile and profile.gender == 'female' else '' }}>Female</option>
+                                        <option value="other" {{ 'selected' if profile and profile.gender == 'other' else '' }}>Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Personal Details Section -->
+                    <div class="form-section">
+                        <h3 class="section-title"><i class="fas fa-id-card"></i>Personal Details</h3>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="height" class="form-label">Height (cm)</label>
+                                    <input type="number" id="height" name="height" class="form-control" 
+                                           value="{{ profile.height if profile and profile.height else '' }}" 
+                                           min="100" max="250" placeholder="e.g. 170">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="weight" class="form-label">Weight (kg)</label>
+                                    <input type="number" id="weight" name="weight" class="form-control" 
+                                           value="{{ profile.weight if profile and profile.weight else '' }}" 
+                                           min="30" max="200" placeholder="e.g. 65">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="education" class="form-label">Education Level</label>
+                                    <select id="education" name="education" class="form-control">
+                                        <option value="">Select Education Level</option>
+                                        <option value="high_school" {{ 'selected' if profile and profile.education == 'high_school' else '' }}>High School</option>
+                                        <option value="bachelor" {{ 'selected' if profile and profile.education == 'bachelor' else '' }}>Bachelor's Degree</option>
+                                        <option value="master" {{ 'selected' if profile and profile.education == 'master' else '' }}>Master's Degree</option>
+                                        <option value="phd" {{ 'selected' if profile and profile.education == 'phd' else '' }}>PhD</option>
+                                        <option value="other" {{ 'selected' if profile and profile.education == 'other' else '' }}>Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="location" class="form-label">Location</label>
+                                    <input type="text" id="location" name="location" class="form-control" 
+                                           value="{{ profile.location if profile and profile.location else '' }}" 
+                                           placeholder="City, Country">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="religion" class="form-label">Religion</label>
+                                    <select id="religion" name="religion" class="form-control">
+                                        <option value="">Select Religion</option>
+                                        <option value="christian" {{ 'selected' if profile and profile.religion == 'christian' else '' }}>Christian</option>
+                                        <option value="muslim" {{ 'selected' if profile and profile.religion == 'muslim' else '' }}>Muslim</option>
+                                        <option value="hindu" {{ 'selected' if profile and profile.religion == 'hindu' else '' }}>Hindu</option>
+                                        <option value="buddhist" {{ 'selected' if profile and profile.religion == 'buddhist' else '' }}>Buddhist</option>
+                                        <option value="jewish" {{ 'selected' if profile and profile.religion == 'jewish' else '' }}>Jewish</option>
+                                        <option value="other" {{ 'selected' if profile and profile.religion == 'other' else '' }}>Other</option>
+                                        <option value="none" {{ 'selected' if profile and profile.religion == 'none' else '' }}>None</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="socialCare" class="form-label">Social Care Level</label>
+                                    <input type="range" id="socialCare" name="socialCare" class="form-control" 
+                                           value="{{ profile.social_care if profile and profile.social_care else 5 }}" 
+                                           min="1" max="10">
+                                    <div class="range-labels">
+                                        <span>Low</span>
+                                        <span>High</span>
+                                    </div>
+                                    <small class="text-muted">How much do you care about social causes?</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Lifestyle Section -->
+                    <div class="form-section">
+                        <h3 class="section-title"><i class="fas fa-heart"></i>Lifestyle</h3>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Do you smoke?</label>
+                                    <div class="radio-group">
+                                        <div class="radio-option">
+                                            <input type="radio" id="smokeYes" name="smoking" value="yes" 
+                                                   {{ 'checked' if profile and profile.smoking else '' }}>
+                                            <span>Yes</span>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" id="smokeNo" name="smoking" value="no" 
+                                                   {{ 'checked' if profile and not profile.smoking else '' }}>
+                                            <span>No</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Do you have pets?</label>
+                                    <div class="radio-group">
+                                        <div class="radio-option">
+                                            <input type="radio" id="petsYes" name="pets" value="yes" 
+                                                   {{ 'checked' if profile and profile.have_pets else '' }}>
+                                            <span>Yes</span>
+                                        </div>
+                                        <div class="radio-option">
+                                            <input type="radio" id="petsNo" name="pets" value="no" 
+                                                   {{ 'checked' if profile and not profile.have_pets else '' }}>
+                                            <span>No</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- About You Section -->
+                    <div class="form-section">
+                        <h3 class="section-title"><i class="fas fa-user-edit"></i>About You</h3>
+                        
+                        {% if profile and profile.photo_url %}
+                        <div class="current-photo">
+                            <p><strong>Current Photo:</strong></p>
+                            <img src="{{ profile.photo_url }}" alt="Current Profile Photo">
+                        </div>
+                        {% endif %}
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="profilePhoto" class="form-label">{% if profile and profile.photo_url %}Update Profile Photo{% else %}Profile Photo{% endif %}</label>
+                                    <input type="file" id="profilePhoto" name="profilePhoto" class="form-control" accept="image/*">
+                                    <small class="text-muted">Upload a clear photo of yourself (optional)</small>
+                                    
+                                    <div class="photo-preview" id="photoPreview" style="display: none;">
+                                        <img id="previewImage" src="" alt="Preview">
+                                        <button type="button" class="remove-photo-btn" onclick="removePhoto()">Remove Photo</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="bio" class="form-label">Bio</label>
+                                    <textarea id="bio" name="bio" class="form-control" rows="4" 
+                                              placeholder="Tell us about yourself, your interests, and what you're looking for...">{{ profile.bio if profile and profile.bio else '' }}</textarea>
+                                    <small class="text-muted">Share something interesting about yourself (optional)</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <a href="{{ url_for('match_feed') }}" class="btn btn-secondary me-3">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Matches
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Photo preview functionality
+        document.getElementById('profilePhoto').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImage').src = e.target.result;
+                    document.getElementById('photoPreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        function removePhoto() {
+            document.getElementById('profilePhoto').value = '';
+            document.getElementById('photoPreview').style.display = 'none';
+        }
+        
+        // Social care range display
+        const socialCareRange = document.getElementById('socialCare');
+        const socialCareValue = document.createElement('span');
+        socialCareValue.style.fontWeight = 'bold';
+        socialCareValue.style.color = '#FF6B6B';
+        socialCareRange.parentNode.insertBefore(socialCareValue, socialCareRange.nextSibling);
+        
+        function updateSocialCareValue() {
+            socialCareValue.textContent = ` (${socialCareRange.value}/10)`;
+        }
+        
+        socialCareRange.addEventListener('input', updateSocialCareValue);
+        updateSocialCareValue(); // Initial call
+    </script>
+</body>
+</html>
