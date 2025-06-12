@@ -1,54 +1,6 @@
 # HeartLink - Dating App Backend API
 
-Backend RESTful API untuk aplikasi dating menggunakan Flask, SQLAlchemy, dan PostgreSQL.
-
-## Fitur
-
-- ✅ Registrasi dan Login User
-- ✅ Manajemen Profile User
-- ✅ Pengaturan Preferensi Pasangan
-- ✅ RESTful API Endpoints
-- ✅ Database PostgreSQL dengan SQLAlchemy
-- ✅ Session Management
-- ✅ Password Hashing
-- ✅ Data Validation
-
-## Database Schema
-
-### Users Table
-- `id` (UUID, Primary Key)
-- `email` (String, Unique, Not Null)
-- `password_hash` (Text, Not Null)
-- `is_active` (Boolean, Default: True)
-- `is_superuser` (Boolean, Default: False)
-- `created_at` (Timestamp)
-- `updated_at` (Timestamp)
-
-### User Profiles Table
-- `id` (UUID, Primary Key)
-- `user_id` (UUID, Foreign Key)
-- `first_name`, `last_name` (String)
-- `date_of_birth` (Date)
-- `gender` (String)
-- `bio` (Text)
-- `photo_url` (Text)
-- `weight`, `height` (Integer)
-- `education`, `location`, `religion` (String)
-- `social_care` (Integer)
-- `smoking`, `drinking`, `have_pets` (Boolean)
-- `cluster_id` (Integer)
-
-### User Preferences Table
-- `id` (UUID, Primary Key)
-- `user_id` (UUID, Foreign Key)
-- `age_min`, `age_max` (Integer)
-- `same_location` (Boolean)
-- `relationship_goal` (String)
-- `is_smoking`, `is_drinking` (Boolean)
-- `same_religion` (Boolean)
-- `partner_social_care` (Integer)
-- `partner_education` (String)
-- `comfortable_pets` (Boolean)
+Backend untuk aplikasi dating menggunakan Flask, SQLAlchemy, dan PostgreSQL.
 
 ## Setup dan Instalasi
 
@@ -101,26 +53,6 @@ python run.py
 
 Aplikasi akan berjalan di `http://localhost:5000`
 
-## API Endpoints
-
-### Authentication
-- `POST /api/register` - Registrasi user baru
-- `POST /api/login` - Login user
-- `POST /api/logout` - Logout user
-
-### User Profile
-- `GET /api/profile` - Get user profile
-- `POST /api/profile` - Create user profile
-- `PUT /api/profile` - Update user profile
-
-### User Preferences
-- `GET /api/preferences` - Get user preferences
-- `POST /api/preferences` - Create user preferences
-- `PUT /api/preferences` - Update user preferences
-
-### Utility
-- `GET /api/user/status` - Get user completion status
-- `GET /api/users` - Get all users (for matching)
 
 ## Web Routes (Frontend)
 
@@ -180,40 +112,7 @@ python database_setup.py reset
 - **Backend**: Flask 2.3.2
 - **Database**: PostgreSQL dengan SQLAlchemy 3.0.3
 - **Authentication**: Session-based dengan password hashing
-- **API**: RESTful JSON API
 - **Environment**: Python 3.8+
-
-## Next Steps
-
-1. Implementasi algoritma matching berdasarkan preferensi
-2. Upload dan manajemen foto profile
-3. Real-time messaging
-4. Push notifications
-5. Machine learning untuk rekomendasi pasangan
-6. Mobile app integration
-
-## Troubleshooting
-
-### Database Connection Error
-1. Pastikan PostgreSQL service berjalan
-2. Cek konfigurasi database di `.env`
-3. Pastikan database sudah dibuat
-
-### Import Error
-1. Pastikan virtual environment aktif
-2. Install ulang dependencies: `pip install -r requirements.txt`
-
-### Session Error
-1. Pastikan SECRET_KEY sudah diset
-2. Clear browser cookies/session
-
-## Contributing
-
-1. Fork repository
-2. Buat feature branch
-3. Commit changes
-4. Push ke branch
-5. Buat Pull Request
 
 ## License
 

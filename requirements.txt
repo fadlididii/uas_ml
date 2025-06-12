@@ -6,8 +6,10 @@ charset-normalizer==3.4.2
 click==8.2.1
 colorama==0.4.6
 dotenv==0.9.9
+Faker==37.4.0
 filelock==3.18.0
 Flask==3.1.1
+Flask-Login==0.6.3
 Flask-Migrate==4.1.0
 Flask-RESTful==0.3.10
 Flask-SQLAlchemy==3.1.1
@@ -45,5 +47,6 @@ torch==2.7.1
 tqdm==4.67.1
 transformers==4.52.4
 typing_extensions==4.14.0
+tzdata==2025.2
 urllib3==2.4.0
 Werkzeug==3.1.3
