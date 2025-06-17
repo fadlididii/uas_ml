@@ -1,0 +1,51 @@
+<!-- navbar_logged_in.html - Navbar untuk user yang sudah login -->
+<!-- Include CSS untuk navbar -->
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="/static/img/favicon.png">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/custom/navbar.css') }}">
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+        <a class="navbar-brand" href="#">
+            <i class="fas fa-heart"></i> HeartLink
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if active_page == 'match_feed' else '' }}" href="{{ url_for('match_feed') }}">
+                        <i class="fas fa-users"></i> Jodoh
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if active_page == 'preferences' else '' }}" href="{{ url_for('preferences') }}">
+                        <i class="fas fa-cog"></i> Preferensi
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if active_page == 'preferences-text' else '' }}" href="{{ url_for('preferences_text') }}">
+                        <i class="fas fa-brain"></i> Preferensi Teks
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ 'active' if active_page == 'image_test' else '' }}" href="{{ url_for('image_test') }}">
+                        <i class="fas fa-images"></i> Tes Visual
+                    </a>
+                </li>
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user-circle"></i> {{ current_user.profile.first_name if current_user.is_authenticated and current_user.profile else current_user.email if current_user.is_authenticated else 'Pengguna' }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ url_for('profile_setup') }}"><i class="fas fa-user-edit"></i> Edit Profil</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Keluar</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

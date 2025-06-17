@@ -3,11 +3,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const heroCreateAccountBtn = document.getElementById('heroCreateAccountBtn');
     const ctaGetStartedBtn = document.getElementById('ctaGetStartedBtn');
     const navGetStartedBtn = document.getElementById('navGetStartedBtn');
-    const loginSubmitBtn = document.getElementById('loginSubmitBtn');
     const loginModal = document.getElementById('loginModal');
     const closeModalBtn = document.getElementById('closeModal');
     const closeLoginModal = document.getElementById('closeLoginModal');
-    const passwordToggle = document.querySelector('.password-toggle');
     const passwordInput = document.getElementById('password');
     const loginForm = document.querySelector('.login-form') || document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
@@ -17,98 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // API Base URL
     const API_BASE = '/api';
 
-    // Form validation functions
-    function showError(input, message) {
-        const formGroup = input.closest('.form-group');
-        formGroup.classList.add('error');
-        formGroup.classList.remove('success');
-        
-        let errorElement = formGroup.querySelector('.error-message');
-        if (!errorElement) {
-            errorElement = document.createElement('span');
-            errorElement.className = 'error-message';
-            formGroup.appendChild(errorElement);
-        }
-        errorElement.textContent = message;
-    }
-
-    function showSuccess(input) {
-        const formGroup = input.closest('.form-group');
-        formGroup.classList.add('success');
-        formGroup.classList.remove('error');
-        
-        const errorElement = formGroup.querySelector('.error-message');
-        if (errorElement) {
-            errorElement.remove();
-        }
-    }
-
-    function clearValidation(input) {
-        const formGroup = input.closest('.form-group');
-        formGroup.classList.remove('error', 'success');
-        
-        const errorElement = formGroup.querySelector('.error-message');
-        if (errorElement) {
-            errorElement.remove();
-        }
-    }
-
-    function validatePasswordMatch() {
-        const password = passwordInput ? passwordInput.value : '';
-        const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value : '';
-        
-        if (confirmPassword && password !== confirmPassword) {
-            showError(confirmPasswordInput, 'Passwords do not match');
-        } else if (confirmPassword) {
-            showSuccess(confirmPasswordInput);
-        }
-    }
-
-    function validateField(e) {
-        const input = e.target;
-        const value = input.value.trim();
-        
-        // Clear previous validation
-        clearValidation(input);
-        
-        // Skip validation if field is empty (required validation will handle it)
-        if (!value && !input.hasAttribute('required')) return;
-        
-        switch (input.type) {
-            case 'email':
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (value && !emailRegex.test(value)) {
-                    showError(input, 'Please enter a valid email address');
-                } else if (value) {
-                    showSuccess(input);
-                }
-                break;
-                
-            case 'password':
-                if (input.id === 'password' || input.id === 'login_password') {
-                    if (value.length < 6) {
-                        showError(input, 'Password must be at least 6 characters long');
-                    } else {
-                        showSuccess(input);
-                        // Also validate confirm password if it has value
-                        if (confirmPasswordInput && confirmPasswordInput.value) {
-                            validatePasswordMatch();
-                        }
-                    }
-                } else if (input.id === 'confirm_password') {
-                    validatePasswordMatch();
-                }
-                break;
-                
-            case 'text':
-                if (input.hasAttribute('required') && value.length < 2) {
-                    showError(input, 'This field must be at least 2 characters long');
-                } else if (value) {
-                    showSuccess(input);
-                }
-                break;
-        }
-    }
+    // Utility functions
 
     // Utility functions
     function showMessage(message, type = 'info') {
@@ -168,31 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    function setLoading(form, isLoading) {
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const inputs = form.querySelectorAll('input, select');
-        
-        if (isLoading) {
-            submitBtn.disabled = true;
-            if (!submitBtn.dataset.originalText) {
-                submitBtn.dataset.originalText = submitBtn.textContent;
-            }
-            submitBtn.textContent = 'Loading...';
-            form.classList.add('loading');
-            inputs.forEach(input => input.disabled = true);
-        } else {
-            submitBtn.disabled = false;
-            submitBtn.textContent = submitBtn.dataset.originalText || (form.id === 'registerForm' ? 'Create Account' : 'Login');
-            form.classList.remove('loading');
-            
-            // Ensure all inputs are enabled and interactive
-            inputs.forEach(input => {
-                input.disabled = false;
-                input.style.pointerEvents = 'auto';
-                input.style.backgroundColor = input.tagName === 'SELECT' ? 'white' : 'white';
-            });
-        }
-    }
+
 
     // Modal functions are implemented in register.html
 
@@ -210,31 +93,23 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             console.log('Register form submitted');
             
-            // Validate all fields
-            let isValid = true;
-            const formInputs = registerForm.querySelectorAll('input, select');
+            // Simple validation
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
             
-            formInputs.forEach(input => {
-                if (input.hasAttribute('required') && !input.value.trim()) {
-                    showError(input, 'This field is required');
-                    isValid = false;
-                } else {
-                    validateField({ target: input });
-                    if (input.closest('.form-group').classList.contains('error')) {
-                        isValid = false;
-                    }
-                }
-            });
-
-            // Check password match
-            if (passwordInput && confirmPasswordInput && passwordInput.value !== confirmPasswordInput.value) {
-                showError(confirmPasswordInput, 'Passwords do not match');
-                isValid = false;
+            if (!email || !password || !confirmPassword) {
+                showMessage('Please fill in all fields', 'error');
+                return;
             }
-
-            console.log('Form validation result:', isValid);
-
-            if (isValid) {
+            
+            if (password !== confirmPassword) {
+                showMessage('Passwords do not match', 'error');
+                return;
+            }
+            
+            console.log('Form validation passed');
+            {
                 // Show loading state
                 const submitBtn = registerForm.querySelector('.btn-primary');
                 if (submitBtn) {
@@ -242,6 +117,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     submitBtn.textContent = 'Creating Account...';
                     submitBtn.disabled = true;
                 }
+                
+                // Disable all inputs
+                const formInputs = registerForm.querySelectorAll('input, select');
+                formInputs.forEach(input => input.disabled = true);
                 
                 // Prepare form data - only email and password for initial registration
                 const formData = {
@@ -309,12 +188,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             errorMessage = Array.isArray(error.detail) ? error.detail[0].msg : error.detail;
                         }
                         
-                        // Show field-specific errors
-                        if (errorMessage.toLowerCase().includes('email')) {
-                            showError(document.getElementById('email'), errorMessage);
-                            return;
-                        } else if (errorMessage.toLowerCase().includes('password')) {
-                            showError(document.getElementById('password'), errorMessage);
+                        // Show field-specific errors in toast message
+                        if (errorMessage.toLowerCase().includes('email') || errorMessage.toLowerCase().includes('password')) {
+                            showMessage(errorMessage, 'error');
                             return;
                         }
                     } else if (typeof error === 'string') {
@@ -343,7 +219,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            setLoading(this, true);
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Loading...';
+            }
             
             try {
                 const response = await fetch('/api/login', {
@@ -401,21 +282,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Login error:', error);
                 showMessage('Network error. Please try again.', 'error');
             } finally {
-                setLoading(this, false);
+                // Reset loading state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Login';
+                }
             }
         });
     }
 
-    // Real-time validation for all input fields
-    const allInputs = document.querySelectorAll('input');
-    allInputs.forEach(input => {
-        input.addEventListener('blur', validateField);
-        input.addEventListener('input', () => {
-            if (input.classList.contains('error')) {
-                validateField({ target: input });
-            }
-        });
-    });
+
 
     // Ensure form fields are interactive on page load
     if (registerForm) {

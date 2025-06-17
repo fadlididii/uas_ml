@@ -440,14 +440,6 @@ function handleSubmit(e) {
         body: formData
     })
     .then(response => response.json())
-    .then(result => {
-        if (result.success) {
-            // Success - redirect to welcome page
-            window.location.href = '/welcome';
-        } else {
-            showError(result.message || 'Failed to save profile');
-        }
-    })
     .catch(error => {
         console.error('Error submitting profile:', error);
         showError('Network error. Please try again.');

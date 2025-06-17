@@ -1,12 +1,259 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Preferences Test - Dating App</title>
+    <title>Tes Preferensi Visual - Aplikasi Kencan</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/custom/preferences.css') }}">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/static/img/favicon.png">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #FF6B6B 0%, #ffffff 50%, #45B7D1 100%);
+            min-height: 100vh;
+            position: relative;
+        }        
+
+        .step-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            color: white;
+            margin: 6 auto;
+            position: relative;
+            box-sizing: border-box;
+            padding: 0;
+            border: none;
+            -webkit-mask-image: -webkit-radial-gradient(white, black);
+            mask-image: radial-gradient(white, black);
+        }
+
+        .step-circle.active {
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .step-circle.inactive {
+            background: #e9ecef;
+            color: #adb5bd;
+        }
+
+        .flow-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin: 1rem 0;
+        }
+
+        .radio-item {
+            position: relative;
+            margin: 0;
+            padding: 0;
+        }
+
+        .radio-item input[type="radio"] {
+            display: none;
+        }
+
+        .radio-item label {
+            display: inline-block;
+            padding: 0.75rem 2rem;
+            border-radius: 9999px;
+            background: #e9ecef;
+            color: #6c757d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+            text-align: center;
+            font-weight: 500;
+            position: relative;
+            margin: 0;
+            border: none;
+            box-sizing: border-box;
+            -webkit-mask-image: -webkit-radial-gradient(white, black);
+            mask-image: radial-gradient(white, black);
+            transform: translateZ(0);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .radio-item input[type="radio"]:checked + label {
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .question-item {
+            margin: 1.5rem 0;
+            padding: 0;
+            background: none;
+            border: none;
+        }
+
+        /* CSS untuk Multiple Selection Visual */
+        .image-option {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            border: 3px solid transparent;
+            background: white;
+        }
+
+        .image-option:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+        }
+
+        .image-option input[type="checkbox"] {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 24px;
+            height: 24px;
+            z-index: 10;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .image-option .checkbox-custom {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 24px;
+            height: 24px;
+            border: 2px solid white;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 9;
+        }
+
+        .image-option input[type="checkbox"]:checked + .checkbox-custom {
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            border-color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+        }
+
+        .image-option input[type="checkbox"]:checked + .checkbox-custom::after {
+            content: '✓';
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .image-option.selected {
+            border-color: #FF6B6B;
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.3);
+        }
+
+        .image-option.selected::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(78, 205, 196, 0.1));
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .image-option img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .image-option:hover img {
+            transform: scale(1.05);
+        }
+
+        .image-option .image-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            color: white;
+            padding: 2rem 1rem 1rem;
+            text-align: center;
+            z-index: 3;
+        }
+
+        .image-option .image-label strong {
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .selection-counter {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+            font-weight: 600;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .selection-counter.hidden {
+            opacity: 0;
+            transform: translateY(100px);
+        }
+
+        .selection-counter i {
+            margin-right: 0.5rem;
+        }
+
+        @media (max-width: 991.98px) {
+            .navbar-nav .nav-link {
+                margin: 0.25rem 0;
+                text-align: center;
+            }
+            
+            .image-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+                gap: 1rem !important;
+            }
+            
+            .selection-counter {
+                bottom: 20px;
+                right: 20px;
+                padding: 0.8rem 1.2rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <!-- Animated Background -->
@@ -15,7 +262,9 @@
         <div class="shape"></div>
         <div class="shape"></div>
         <div class="shape"></div>
-   </div>
+    </div>
+
+    {% include 'navbar_logged_in.html' %}
 
     <!-- Header -->
     <header class="header">
@@ -25,23 +274,18 @@
     <!-- Progress Flow -->
     <div class="progress-flow">
         <div class="flow-step">
-            <div class="step-circle completed">1</div>
-            <div class="step-text">Preferences<br>(Q 1-13)</div>
+            <div class="step-circle inactive">1</div>
+            <div class="step-text">Preferensi Personal<br></div>
             <div class="step-connector"></div>
         </div>
         <div class="flow-step">
-            <div class="step-circle completed">2</div>
-            <div class="step-text">Text Preferences</div>
+            <div class="step-circle inactive">2</div>
+            <div class="step-text">Preferensi Teks</div>
             <div class="step-connector"></div>
         </div>
         <div class="flow-step">
             <div class="step-circle active">3</div>
-            <div class="step-text">Visual Test</div>
-            <div class="step-connector"></div>
-        </div>
-        <div class="flow-step">
-            <div class="step-circle inactive">4</div>
-            <div class="step-text">Match</div>
+            <div class="step-text">Tes Visual</div>
         </div>
     </div>
 
@@ -49,46 +293,35 @@
     <div class="main-container">
         <div class="preferences-card">
             <div class="card-header">
-                <h1 class="card-title">🖼️ Visual Preferences Test</h1>
-                <p class="card-subtitle">Help us understand your visual preferences to find your perfect match</p>
+                <h1 class="card-title">Tes Preferensi Visual</h1>
+                <p class="card-subtitle">Bantu kami memahami preferensi visual Anda untuk menemukan pasangan yang sempurna</p>
             </div>
 
-            <!-- Flash Messages -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+            <form method="POST" id="visualPreferenceForm" enctype="multipart/form-data">
 
-            <form method="POST">
+                <!-- Hidden input untuk redirect -->
+                <input type="hidden" name="redirect_to" id="redirectTo" value="">
+                
                 <div class="question-section active">
                     <div class="question-group">
-                        <h3 class="question-title">Choose Your Visual Preference</h3>
-                        <p class="question-subtitle">Select the visual style that appeals to you most. This will help us find matches with similar aesthetic preferences.</p>
+                        <h3 class="question-title">Pilih Preferensi Visual Anda</h3>
+                        <p class="question-subtitle">Pilih gaya visual yang menarik bagi Anda. Anda dapat memilih lebih dari satu untuk mendapatkan hasil yang lebih akurat.</p>
                         
                         <div class="image-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin: 2rem 0;">
                             {% for i in range(10) %}
-                            <div class="image-option" style="position: relative; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: all 0.3s ease;">
-                                <input type="radio" 
-                                       name="preferred_cluster_id" 
-                                       value="{{ i }}" 
-                                       id="cluster_{{ i }}"
-                                       {% if existing_test and existing_test.preferred_cluster_id == i %}checked{% endif %}
-                                       style="position: absolute; top: 10px; right: 10px; transform: scale(1.5); z-index: 10;">
-                                <label for="cluster_{{ i }}" style="cursor: pointer; display: block;">
-                                    <img src="{{ url_for('static', filename='images/clusters/' + target_gender + '/cluster_' + i|string + '.jpg') }}" 
-                                         alt="Visual Style {{ i + 1 }}"
-                                         style="width: 100%; height: 200px; object-fit: cover; transition: transform 0.3s ease;"
-                                         onerror="this.src='{{ url_for('static', filename='img/avatar1.png') }}'; this.style.filter='grayscale(100%)';">
-                                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.7)); color: white; padding: 1rem; text-align: center;">
-                                        <strong>Style {{ i + 1 }}</strong>
-                                    </div>
-                                </label>
+                            <div class="image-option" data-cluster="{{ i }}">
+                                <input type="checkbox" 
+                                    name="preferred_cluster_ids" 
+                                    value="{{ i }}" 
+                                    id="cluster_{{ i }}"
+                                    {% if existing_test and existing_test.preferred_cluster_ids and i|string in existing_test.preferred_cluster_ids %}checked{% endif %}>
+                                <div class="checkbox-custom"></div>
+                                <img src="{{ url_for('static', filename='images/clusters/' + target_gender + '/cluster_' + i|string + '.jpg') }}" 
+                                    alt="Gaya Visual {{ i + 1 }}"
+                                    onerror="this.src='{{ url_for('static', filename='img/avatar1.png') }}'; this.style.filter='grayscale(100%)';">
+                                <div class="image-label">
+                                    <strong>Gaya {{ i + 1 }}</strong>
+                                </div>
                             </div>
                             {% endfor %}
                         </div>
@@ -96,7 +329,7 @@
                         <div style="background: rgba(69, 183, 209, 0.1); border: 1px solid rgba(69, 183, 209, 0.3); border-radius: 15px; padding: 1.5rem; margin: 2rem 0;">
                             <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; color: #45B7D1; font-weight: 500;">
                                 <i class="fas fa-info-circle"></i>
-                                <span>Choose the visual style that represents your preference in potential matches.</span>
+                                <span>Pilih satu atau lebih gaya visual yang mewakili preferensi Anda terhadap calon pasangan.</span>
                             </div>
                         </div>
                     </div>
@@ -104,19 +337,148 @@
                 
                 <!-- Navigation -->
                 <div class="navigation">
-                    <button type="button" class="nav-button secondary" onclick="window.location.href='{{ url_for('text_test') }}'">
-                        <i class="fas fa-arrow-left"></i> Back to Text Test
+                    <button type="button" class="nav-button secondary" onclick="window.location.href='{{ url_for('preferences_text') }}'">
+                        <i class="fas fa-arrow-left"></i> Kembali ke Tes Teks
                     </button>
-                    <button type="submit" class="nav-button primary">
-                        Save Preference & Continue <i class="fas fa-arrow-right"></i>
+                    <button type="button" class="nav-button primary" id="saveAndContinueBtn">
+                        Simpan Preferensi & Lanjutkan <i class="fas fa-arrow-right"></i>
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- Selection Counter -->
+    <div class="selection-counter hidden" id="selectionCounter">
+        <i class="fas fa-check-circle"></i>
+        <span id="counterText">0 gaya dipilih</span>
+    </div>
+
     <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('input[name="preferred_cluster_ids"]');
+            const imageOptions = document.querySelectorAll('.image-option');
+            const selectionCounter = document.getElementById('selectionCounter');
+            const counterText = document.getElementById('counterText');
+            const form = document.getElementById('visualPreferenceForm');
+            const redirectInput = document.getElementById('redirectTo');
+            const saveAndContinueBtn = document.getElementById('saveAndContinueBtn');
+
+            function updateCounter() {
+                const checkedCount = document.querySelectorAll('input[name="preferred_cluster_ids"]:checked').length;
+                counterText.textContent = `${checkedCount} gaya dipilih`;
+                
+                if (checkedCount > 0) {
+                    selectionCounter.classList.remove('hidden');
+                } else {
+                    selectionCounter.classList.add('hidden');
+                }
+                
+                // Save to localStorage for persistence
+                const selectedValues = Array.from(document.querySelectorAll('input[name="preferred_cluster_ids"]:checked')).map(cb => cb.value);
+                localStorage.setItem('visualPreferences', JSON.stringify(selectedValues));
+            }
+
+            function updateVisualState(imageOption, checkbox) {
+                if (checkbox.checked) {
+                    imageOption.classList.add('selected');
+                } else {
+                    imageOption.classList.remove('selected');
+                }
+                updateCounter();
+            }
+
+            // Load saved preferences from localStorage if no server data
+            function loadSavedPreferences() {
+                const hasServerData = document.querySelector('input[name="preferred_cluster_ids"]:checked');
+                if (!hasServerData) {
+                    const saved = localStorage.getItem('visualPreferences');
+                    if (saved) {
+                        try {
+                            const savedValues = JSON.parse(saved);
+                            savedValues.forEach(value => {
+                                const checkbox = document.getElementById(`cluster_${value}`);
+                                if (checkbox) {
+                                    checkbox.checked = true;
+                                }
+                            });
+                        } catch (e) {
+                            console.log('Error loading saved preferences:', e);
+                        }
+                    }
+                }
+            }
+
+            // Handle "Simpan Preferensi & Lanjutkan" button click
+            saveAndContinueBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const checkedCount = document.querySelectorAll('input[name="preferred_cluster_ids"]:checked').length;
+                console.log('Checked count:', checkedCount);
+                
+                // Log nilai checkbox yang dipilih
+                const selectedValues = Array.from(document.querySelectorAll('input[name="preferred_cluster_ids"]:checked')).map(cb => cb.value);
+                console.log('Selected values:', selectedValues);
+                
+                if (checkedCount === 0) {
+                    alert('Silakan pilih setidaknya satu gaya visual yang Anda sukai.');
+                    return;
+                }
+                
+                redirectInput.value = 'match_feed';
+                form.action = "{{ url_for('image_test') }}?redirect=match_feed";
+                
+                // Log form data sebelum submit
+                console.log('Form action:', form.action);
+                console.log('Redirect value:', redirectInput.value);
+                
+                form.submit();
+            });
+
+            checkboxes.forEach((checkbox, index) => {
+                const imageOption = imageOptions[index];
+                
+                // Set initial state
+                if (checkbox.checked) {
+                    imageOption.classList.add('selected');
+                }
+                
+                // Listen to checkbox changes
+                checkbox.addEventListener('change', function() {
+                    updateVisualState(imageOption, checkbox);
+                });
+                
+                // Make the entire image option clickable
+                imageOption.addEventListener('click', function(e) {
+                    // Prevent double-triggering if checkbox itself is clicked
+                    if (e.target === checkbox) {
+                        return;
+                    }
+                    
+                    // Toggle checkbox state
+                    checkbox.checked = !checkbox.checked;
+                    updateVisualState(imageOption, checkbox);
+                });
+                
+                // Make sure checkbox clicks work normally
+                checkbox.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+
+            // Load saved preferences and initialize
+            loadSavedPreferences();
+            
+            // Initialize counter and visual states
+            updateCounter();
+            checkboxes.forEach((checkbox, index) => {
+                if (checkbox.checked) {
+                    imageOptions[index].classList.add('selected');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

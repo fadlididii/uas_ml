@@ -35,13 +35,31 @@ CREATE DATABASE dating_app_dev;
 ### 5. Konfigurasi Environment
 1. Copy file `.env` dan sesuaikan konfigurasi database:
 ```env
+
+# Flask Configuration
+FLASK_CONFIG=development
+FLASK_ENV=development
+FLASK_DEBUG=True
+
+# Database Configuration
 DATABASE_URL=postgresql://username:password@localhost/dating_app
 DEV_DATABASE_URL=postgresql://username:password@localhost/dating_app_dev
+
+# Security Keys
+SECRET_KEY= bebas isi apa aja
+JWT_SECRET_KEY= bebas isi apa aja
+
+# Application Settings
+APP_NAME=HeartLink Dating App
+APP_VERSION=1.0.0
+
 ```
 
 ### 6. Inisialisasi Database
 ```bash
-python database_setup.py init
+flask db init
+flask db migrate -m "Initial migration."
+flask db upgrade
 ```
 
 ### 7. Jalankan Aplikasi
@@ -49,6 +67,11 @@ python database_setup.py init
 python app.py
 # atau
 python run.py
+```
+
+### 9. Generate Dummy User (kalau mau)
+```bash
+python generate_user.py
 ```
 
 Aplikasi akan berjalan di `http://localhost:5000`
@@ -60,7 +83,7 @@ Aplikasi akan berjalan di `http://localhost:5000`
 - `/register` - Registrasi form
 - `/login` - Login (redirect ke index)
 - `/profile-setup` - Setup profile setelah registrasi
-- `/welcome` - Welcome page setelah profile setup
+
 - `/preferences` - Setup preferensi pasangan
 - `/match-feed` - Feed pasangan (placeholder)
 
@@ -70,18 +93,10 @@ Aplikasi akan berjalan di `http://localhost:5000`
 2. **Register** → User membuat akun baru
 3. **Login** → User login dengan email/password
 4. **Profile Setup** → User mengisi data profile
-5. **Welcome Page** → Halaman selamat datang
-6. **Preferences** → User mengisi preferensi pasangan
+5. **Preferences** → User mengisi preferensi pasangan
+6. **Visual Test** → User mengisi preferensi visual
 7. **Match Feed** → Menampilkan calon pasangan (next step)
-
-
-### Environment Variables
-- `FLASK_CONFIG`: development/production
-- `FLASK_ENV`: development/production
-- `FLASK_DEBUG`: True/False
-- `DATABASE_URL`: PostgreSQL connection string
-- `SECRET_KEY`: Flask secret key
-- `JWT_SECRET_KEY`: JWT secret key
+8. **Match Details** → Menampilkan detail pasangan
 
 ## Tech Stack
 

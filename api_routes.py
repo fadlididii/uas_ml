@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify, session, current_app as app
-from models import db, User, UserProfile, UserPreferences
+from models import db, User, UserProfile, UserPreferencesSubset, UserPreferencesSimilarity
 from datetime import datetime, date
 import uuid
 import os
@@ -87,7 +87,9 @@ def login():
                 'user_id': user.id,
                 'email': user.email,
                 'has_profile': user.profile is not None,
-                'has_preferences': user.preferences is not None
+                'has_preferences': (user.profile and 
+                                  user.profile.preferences_subset is not None and 
+                                  user.profile.preferences_similarity is not None)
             },
             message='Login successful'
         )
@@ -193,10 +195,6 @@ def profile():
             
             db.session.commit()
             
-            # For HTML form submission, redirect to welcome page
-            if request.content_type and 'application/json' not in request.content_type:
-                from flask import redirect, url_for
-                return redirect('/welcome')
             
             # For API calls, return JSON response
             return success_response(
@@ -261,6 +259,81 @@ def preferences():
             db.session.rollback()
             return error_response(f'Preferences update failed: {str(e)}', 500)
 
+@api.route('/preferences', methods=['PUT'])
+@login_required
+def update_preferences():
+    """Update user preferences"""
+    try:
+        data = request.get_json()
+        user_id = session['user_id']
+        
+        user = User.query.get(user_id)
+        if not user or not user.profile:
+            return error_response('User profile not found', 404)
+        
+        # Get or create subset preferences
+        subset_prefs = user.profile.preferences_subset
+        if not subset_prefs:
+            subset_prefs = UserPreferencesSubset(user_id=user.profile.user_id)
+            db.session.add(subset_prefs)
+        
+        # Get or create similarity preferences
+        similarity_prefs = user.profile.preferences_similarity
+        if not similarity_prefs:
+            similarity_prefs = UserPreferencesSimilarity(user_id=user.profile.user_id)
+            db.session.add(similarity_prefs)
+        
+        # Update subset preference fields
+        subset_fields = {
+            'preferred_age_min': 'age_min',
+            'preferred_age_max': 'age_max',
+            'same_location_only': 'same_location',
+            'serious_only': 'serious_only',
+            'allow_smoking': 'is_smoking',
+            'allow_alcohol': 'is_drinking',
+            'prefer_same_religion': 'same_religion',
+            'education_min': 'partner_education'
+        }
+        
+        for db_field, api_field in subset_fields.items():
+            if api_field in data:
+                setattr(subset_prefs, db_field, data[api_field])
+        
+        # Update similarity preference fields
+        similarity_fields = {
+            'care_social_issues': 'care_social_issues',
+            'sports_frequency': 'sports_frequency',
+            'message_length': 'message_length',
+            'emoji_frequency': 'emoji_frequency',
+            'joke_frequency': 'joke_frequency',
+            'communication_type': 'communication_type',
+            'message_style': 'message_style',
+            'allow_informal': 'allow_informal',
+            'abbreviation_frequency': 'abbreviation_frequency',
+            'punctuation_frequency': 'punctuation_frequency',
+            'capitalization_sensitive': 'capitalization_sensitive',
+            'has_pets': 'has_pets',
+            'active_time': 'active_time'
+        }
+        
+        for db_field, api_field in similarity_fields.items():
+            if api_field in data:
+                setattr(similarity_prefs, db_field, data[api_field])
+        
+        db.session.commit()
+        
+        return success_response(
+            data={
+                'subset_preferences': subset_prefs.to_dict(),
+                'similarity_preferences': similarity_prefs.to_dict()
+            },
+            message='Preferences updated successfully'
+        )
+        
+    except Exception as e:
+        db.session.rollback()
+        return error_response(f'Preferences update failed: {str(e)}', 500)
+
 @api.route('/user/status', methods=['GET'])
 @login_required
 def user_status():
@@ -271,30 +344,18 @@ def user_status():
     if not user:
         return error_response('User not found', 404)
     
+    has_preferences = (user.profile and 
+                      user.profile.preferences_subset is not None and 
+                      user.profile.preferences_similarity is not None)
+    
     status = {
         'user_id': user.id,
         'email': user.email,
         'has_profile': user.profile is not None,
-        'has_preferences': user.preferences is not None,
-        'profile_complete': False,
-        'preferences_complete': False
+        'has_preferences': has_preferences,
+        'profile_complete': user.profile is not None,
+        'preferences_complete': has_preferences
     }
-    
-    # Check if profile is complete
-    if user.profile:
-        required_profile_fields = ['first_name', 'last_name', 'date_of_birth', 'gender']
-        status['profile_complete'] = all(
-            getattr(user.profile, field) is not None 
-            for field in required_profile_fields
-        )
-    
-    # Check if preferences are complete
-    if user.preferences:
-        required_preference_fields = ['age_min', 'age_max', 'relationship_goal']
-        status['preferences_complete'] = all(
-            getattr(user.preferences, field) is not None 
-            for field in required_preference_fields
-        )
     
     return success_response(data=status)
 

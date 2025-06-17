@@ -1,18 +1,18 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_migrate import Migrate
-from flask_login import LoginManager, login_user, login_required, logout_user
-from matching_system import get_final_matches
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.utils import secure_filename
+from werkzeug.security import check_password_hash
 from config import config
-from models import db, User, UserProfile, UserPreferences, UserTextTest, UserImageTest
-from datetime import datetime
-from sentence_transformers import SentenceTransformer
+from models import db, User, UserProfile, UserPreferencesSubset, UserPreferencesSimilarity, UserImageTest
+from datetime import datetime, date
 from sklearn.metrics.pairwise import cosine_similarity
 from api_routes import api
 import numpy as np
 import os
 import uuid
 import pickle
+import joblib 
 from PIL import Image
 from functools import wraps
 
@@ -46,7 +46,6 @@ app.register_blueprint(api)
 with app.app_context():
     db.create_all()
 
-
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -57,41 +56,47 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
         
+        if not email or not password:
+            flash('Email dan password diperlukan', 'error')
+            return redirect(url_for('index'))
+            
         # Validasi login
         user = User.query.filter_by(email=email).first()
         
-        if user and user.check_password(password):
-            if user.is_active:
-                # Login berhasil
-                login_user(user)
-                session['user_id'] = user.id
-                session['email'] = user.email
-                flash('Login successful!', 'success')
-                
-                # Redirect based on user completion status
-                # 1. Check if user has profile
-                if not user.profile:
-                    return redirect(url_for('profile_setup'))
-                
-                # 2. Check if user has preferences
-                elif not user.preferences:
-                    return redirect(url_for('preferences'))
-                
-                # 3. Check if user has completed text test
-                elif not UserTextTest.query.filter_by(user_id=user.id).first():
-                    return redirect(url_for('text_test'))
-                
-                # 4. Check if user has completed image test (placeholder for now)
-                elif not user.image_test_completed:
-                    return redirect(url_for('image_test'))
-                
-                # 5. If all complete, go to match feed
-                else:
-                    return redirect(url_for('match_feed'))
-            else:
-                flash('Account is deactivated', 'error')
+        if not user or not user.check_password(password):
+            flash('Email atau password tidak valid', 'error')
+            return redirect(url_for('index'))
+            
+        if not user.is_active:
+            flash('Akun tidak aktif', 'error')
+            return redirect(url_for('index'))
+            
+        # Login berhasil
+        login_user(user)
+        # Refresh user object untuk memastikan semua relasi terload dengan benar
+        db.session.refresh(user)
+        
+        # Simpan data user di session
+        session['user_id'] = user.id
+        session['email'] = user.email
+        flash('Login berhasil!', 'success')
+        
+        # Redirect based on user completion status
+        # 1. Check if user has profile
+        if not user.profile:
+            return redirect(url_for('profile_setup'))
+        
+        # 2. Check if user has preferences
+        elif not user.preferences_subset:
+            return redirect(url_for('preferences'))
+        
+        # 3. Check if user has completed image test
+        elif not user.image_tests:
+            return redirect(url_for('image_test'))
+        
+        # 4. If all complete, go to match feed
         else:
-            flash('Invalid email or password', 'error')
+            return redirect(url_for('match_feed'))
     
     return render_template('index.html')  # Use index.html as login page
 
@@ -149,47 +154,52 @@ def login_required(f):
 @app.route('/profile-setup', methods=['GET', 'POST'])
 @login_required
 def profile_setup():
-    user_id = session['user_id']
-    user = User.query.get(user_id)
-    
-    if request.method == 'GET':
-        # Prepare profile data for form pre-filling
-        profile_data = {}
-        if user.profile:
-            profile = user.profile
-            profile_data = {
-                'first_name': profile.first_name or '',
-                'last_name': profile.last_name or '',
-                'date_of_birth': profile.date_of_birth.strftime('%Y-%m-%d') if profile.date_of_birth else '',
-                'gender': profile.gender or '',
-                'bio': profile.bio or '',
-                'weight': profile.weight or '',
-                'height': profile.height or '',
-                'education': profile.education or '',
-                'location': profile.location or '',
-                'religion': profile.religion or '',
-                'social_care': profile.social_care or 5,
-                'smoking': 'yes' if profile.smoking else 'no' if profile.smoking is not None else '',
-                'have_pets': 'yes' if profile.have_pets else 'no' if profile.have_pets is not None else '',
-                'photo_url': profile.photo_url or ''
-            }
-        
-        return render_template('profile-setup.html', profile_data=profile_data)
-    
-    elif request.method == 'POST':
+    if request.method == 'POST':
         try:
+            user_id = session['user_id']
+            user = User.query.get(user_id)
+            
             # Ambil data dari form
             data = request.form
-            file = request.files.get('profilePhoto')
+            file = request.files.get('profile_photo')  # Updated to match frontend
+            
+            # Get date of birth from form
+            date_of_birth = None
+            if data.get('date_of_birth'):
+                try:
+                    from datetime import datetime as dt
+                    date_of_birth = dt.strptime(data.get('date_of_birth'), '%Y-%m-%d').date()
+                    # Validate minimum age (21 years)
+                    today = date.today()
+                    age = today.year - date_of_birth.year - ((today.month, today.day) < (date_of_birth.month, date_of_birth.day))
+                    if age < 21:
+                        raise ValueError("Minimum age is 21 years")
+                except (ValueError, TypeError) as e:
+                    raise ValueError(f"Please enter a valid date of birth: {str(e)}")
+            # Fallback: Calculate date of birth from age if date_of_birth not provided
+            elif data.get('age'):
+                try:
+                    age_int = int(data.get('age'))
+                    if age_int < 21:
+                        raise ValueError("Minimum age is 21 years")
+                    current_year = datetime.now().year
+                    birth_year = current_year - age_int
+                    date_of_birth = date(birth_year, 1, 1)  # Default to January 1st
+                except (ValueError, TypeError):
+                    raise ValueError("Please enter a valid age")
             
             # Simpan file jika ada
             photo_url = None
             if file and file.filename:
                 filename = secure_filename(file.filename)
+                # Create unique filename to avoid conflicts
+                name, ext = os.path.splitext(filename)
+                unique_filename = f"{name}_{uuid.uuid4().hex[:8]}{ext}"
+                
                 # Create uploads directory if it doesn't exist
                 upload_dir = os.path.join('static', 'uploads', 'profiles')
                 os.makedirs(upload_dir, exist_ok=True)
-                photo_path = os.path.join(upload_dir, filename)
+                photo_path = os.path.join(upload_dir, unique_filename)
                 file.save(photo_path)
                 photo_url = '/' + photo_path.replace('\\', '/')  # Untuk dipakai di HTML nanti
 
@@ -198,24 +208,56 @@ def profile_setup():
             if not profile:
                 profile = UserProfile(user_id=user_id)
                 db.session.add(profile)
+                # Flush to ensure profile is created before creating related objects
+                db.session.flush()
             
-            # Update profile fields
-            profile.first_name = data.get('firstName')
-            profile.last_name = data.get('lastName')
-            profile.date_of_birth = datetime.strptime(data.get('dateOfBirth'), '%Y-%m-%d') if data.get('dateOfBirth') else None
+            # Get or create similarity preferences first
+            similarity_prefs = None
+            if profile:
+                similarity_prefs = profile.preferences_similarity
+            if not similarity_prefs:
+                similarity_prefs = UserPreferencesSimilarity(user_id=user_id)
+                db.session.add(similarity_prefs)
+                db.session.flush()
+            
+            # Update profile fields sesuai field names dari frontend
+            profile.first_name = data.get('first_name') 
+            profile.last_name = data.get('last_name')
+            profile.date_of_birth = date_of_birth
             profile.gender = data.get('gender')
             profile.bio = data.get('bio')
-            profile.weight = int(data.get('weight')) if data.get('weight') else None
-            profile.height = int(data.get('height')) if data.get('height') else None
+            profile.weight_kg = int(data.get('weight_kg')) if data.get('weight_kg') else None
+            profile.height_cm = int(data.get('height_cm')) if data.get('height_cm') else None
             profile.education = data.get('education')
             profile.location = data.get('location')
             profile.religion = data.get('religion')
-            profile.social_care = int(data.get('socialCare')) if data.get('socialCare') else None
-            profile.smoking = True if data.get('smoking') == 'yes' else False
-            profile.drinking = None  # Tidak ada di form HTML
-            profile.have_pets = True if data.get('pets') == 'yes' else False
+            profile.hobbies = data.get('hobbies')
+            profile.language_used = data.get('language_used')
+            profile.whatsapp = data.get('whatsapp')
+            profile.instagram = data.get('instagram')
+            profile.smoking = data.get('smoking') == 'yes' if data.get('smoking') else None
+            profile.alcohol = data.get('alcohol') == 'yes' if data.get('alcohol') else None
+            profile.relationship_goal = data.get('relationship_goal')
             
-            if photo_url:
+            # Handle active_time (multiple checkboxes) - now similarity_prefs is properly defined
+            active_times = request.form.getlist('active_time')
+            if active_times and similarity_prefs:
+                similarity_prefs.set_active_time_list([int(time) for time in active_times])
+            
+            # Update similarity preferences
+            if data.get('outdoor_activity'):
+                similarity_prefs.outdoor_activity = int(data.get('outdoor_activity'))
+            if data.get('care_social_issues'):
+                similarity_prefs.care_social_issues = int(data.get('care_social_issues'))
+            if data.get('sports_frequency'):
+                similarity_prefs.sports_frequency = int(data.get('sports_frequency'))
+            if data.get('has_pets'):
+                similarity_prefs.has_pets = data.get('has_pets') == 'yes'
+            
+            # Handle photo removal or update
+            if data.get('remove_photo') == 'true':
+                profile.photo_url = None
+            elif photo_url:
                 profile.photo_url = photo_url
                 
                 # Automatic clustering for profile photo
@@ -231,24 +273,40 @@ def profile_setup():
             flash('Profile updated successfully!', 'success')
             
             # Redirect based on completion status
-            if not user.preferences:
+            if not user.profile.preferences_subset:
                 return redirect(url_for('preferences'))
-            elif not UserTextTest.query.filter_by(user_id=user.id).first():
-                return redirect(url_for('text_test'))
+            elif not user.profile.image_test:
+                return redirect(url_for('preferences_text'))
             else:
                 return redirect(url_for('match_feed'))
             
+        except ValueError as e:
+            flash(str(e), 'error')
+            user_id = session['user_id']
+            user = User.query.get(user_id)
+            profile_data = user.profile if user else None
+            preferences_similarity = profile_data.preferences_similarity if profile_data else None
+            return render_template('profile-setup.html', profile_data=profile_data, preferences_similarity=preferences_similarity)
         except Exception as e:
             db.session.rollback()
-            flash('Failed to update profile. Please try again.', 'error')
-            return redirect(url_for('profile_setup'))
-
-
-
-@app.route('/welcome')
-@login_required
-def welcome():
-    return render_template('welcome.html')
+            flash(f'Failed to update profile: {str(e)}', 'error')
+            user_id = session['user_id']
+            user = User.query.get(user_id)
+            profile_data = user.profile if user else None
+            preferences_similarity = profile_data.preferences_similarity if profile_data else None
+            return render_template('profile-setup.html', profile_data=profile_data, preferences_similarity=preferences_similarity)
+    
+    # GET request - load existing profile data for prefill
+    user_id = session['user_id']
+    user = User.query.get(user_id)
+    profile_data = user.profile if user else None
+    
+    # Get existing preferences similarity data for prefill
+    preferences_similarity = None
+    if profile_data:
+        preferences_similarity = profile_data.preferences_similarity
+    
+    return render_template('profile-setup.html', profile_data=profile_data, preferences_similarity=preferences_similarity)
 
 @app.route('/preferences', methods=['GET', 'POST'])
 @login_required
@@ -258,45 +316,105 @@ def preferences():
             user_id = session['user_id']
             user = User.query.get(user_id)
             
-            # Get or create preferences
-            prefs = user.preferences
-            if not prefs:
-                prefs = UserPreferences(user_id=user_id)
-                db.session.add(prefs)
+            # Pastikan user memiliki profile
+            if not user.profile:
+                flash('Anda harus mengisi profil terlebih dahulu', 'error')
+                return redirect(url_for('profile_setup'))
             
-            # Update preferences from form data
-            if request.form.get('age_min'):
-                prefs.age_min = int(request.form.get('age_min'))
-            if request.form.get('age_max'):
-                prefs.age_max = int(request.form.get('age_max'))
+            # Get or create subset preferences
+            subset_prefs = user.preferences_subset
+            if not subset_prefs:
+                subset_prefs = UserPreferencesSubset(user_id=user.profile.user_id)
+                db.session.add(subset_prefs)
             
-            prefs.relationship_goal = request.form.get('relationship_goal')
-            prefs.partner_education = request.form.get('partner_education')
+            # Get or create similarity preferences
+            similarity_prefs = user.preferences_similarity
+            if not similarity_prefs:
+                similarity_prefs = UserPreferencesSimilarity(user_id=user.profile.user_id)
+                db.session.add(similarity_prefs)
             
-            # Handle boolean fields - sesuaikan dengan nilai form HTML
-            prefs.same_location = request.form.get('same_location') == 'yes'
-            prefs.is_smoking = request.form.get('smoking') == 'yes'
-            prefs.is_drinking = request.form.get('drinking') == 'yes'
-            prefs.same_religion = request.form.get('same_religion') == 'yes'
-            prefs.comfortable_pets = request.form.get('comfortable_pets') == 'yes'
+            # Update subset preferences from form data
+            # Preferensi Usia
+            if request.form.get('min_age'):
+                subset_prefs.preferred_age_min = int(request.form.get('min_age'))
+            if request.form.get('max_age'):
+                subset_prefs.preferred_age_max = int(request.form.get('max_age'))
             
-            if request.form.get('partner_social_care'):
-                prefs.partner_social_care = int(request.form.get('partner_social_care'))
+            # Validasi rentang usia
+            if subset_prefs.preferred_age_min and subset_prefs.preferred_age_max:
+                if subset_prefs.preferred_age_min > subset_prefs.preferred_age_max:
+                    flash('Usia minimum harus lebih kecil dari usia maksimum', 'error')
+                    return redirect(url_for('preferences'))
+            
+            # Preferensi Lokasi
+            location_preference = request.form.get('location_preference')
+            if location_preference:
+                subset_prefs.same_location_only = (location_preference == 'same_city')
+            
+            # Tujuan Hubungan
+            relationship_goal = request.form.get('relationship_goal')
+            if relationship_goal:
+                subset_prefs.serious_only = (relationship_goal == 'serious')
+            
+            # Preferensi Gaya Hidup - Merokok
+            smoking_preference = request.form.get('smoking_preference')
+            if smoking_preference:
+                # Jika 'yes', berarti bermasalah dengan pasangan yang merokok
+                # Jadi allow_smoking = False
+                subset_prefs.allow_smoking = (smoking_preference == 'no')
+            
+            # Preferensi Gaya Hidup - Alkohol
+            drinking_preference = request.form.get('drinking_preference')
+            if drinking_preference:
+                # Jika 'yes', berarti bermasalah dengan pasangan yang minum alkohol
+                # Jadi allow_alcohol = False
+                subset_prefs.allow_alcohol = (drinking_preference == 'no')
+            
+            # Preferensi Agama
+            religion_preference = request.form.get('religion_preference')
+            if religion_preference:
+                subset_prefs.prefer_same_religion = (religion_preference == 'same_religion')
+            
+            # Preferensi Pendidikan
+            education_preference = request.form.get('education_preference')
+            if education_preference:
+                subset_prefs.education_min = education_preference
+            
             
             db.session.commit()
-            flash('Preferences updated successfully!', 'success')
-            return redirect(url_for('text_test'))
+            flash('Preferensi berhasil diperbarui!', 'success')
+            
+            # Redirect ke halaman berikutnya
+            if not user.profile.image_test:
+                return redirect(url_for('image_test'))
+            else:
+                return redirect(url_for('match_feed'))
             
         except Exception as e:
             db.session.rollback()
-            flash('Failed to update preferences. Please try again.', 'error')
+            flash(f'Gagal memperbarui preferensi: {str(e)}', 'error')
+            return redirect(url_for('preferences'))
     
-    # Get existing preferences for prefill
+    # GET request - load existing preferences for prefill
     user_id = session['user_id']
     user = User.query.get(user_id)
-    existing_prefs = user.preferences
     
-    return render_template('preferences.html', preferences=existing_prefs)
+    # Get existing preferences for prefill
+    preferences = None
+    if user.profile and user.profile.preferences_subset:
+        preferences = {
+            'min_age': user.profile.preferences_subset.preferred_age_min,
+            'max_age': user.profile.preferences_subset.preferred_age_max,
+            'location_preference': 'same_city' if user.profile.preferences_subset.same_location_only else 'different_city',
+            'relationship_goal': 'serious' if user.profile.preferences_subset.serious_only else 'casual',
+            'smoking_preference': 'yes' if not user.profile.preferences_subset.allow_smoking else 'no',
+            'drinking_preference': 'yes' if not user.profile.preferences_subset.allow_alcohol else 'no',
+            'religion_preference': 'same_religion' if user.profile.preferences_subset.prefer_same_religion else 'different_religion',
+            'education_preference': user.profile.preferences_subset.education_min,
+            'social_care': user.profile.preferences_similarity.care_social_issues if user.profile.preferences_similarity else 3
+        }
+    
+    return render_template('preferences.html', preferences=preferences)
 
 @app.route('/match-feed')
 @login_required
@@ -318,37 +436,35 @@ def match_feed():
             profile_data['cluster_similarity'] = round(match_data['cluster_similarity'] * 100, 1)
             match_profiles.append(profile_data)
     
-    return render_template('match_feed.html', 
-                         user=user, 
-                         matches=match_profiles)
+    # Add current datetime for age calculation in template
+    now = datetime.now()
+    
+    return render_template('match_feed.html', user=user, matches=match_profiles, now=now)
 
-
-# Initialize sentence transformer model
-model = SentenceTransformer('all-MiniLM-L6-v2')
-
-# Function to preprocess image for clustering
-def preprocess_image_for_clustering(image_path, target_size=(64, 64)):
-    """
-    Preprocess image for clustering: resize, flatten, normalize
-    """
-    try:
-        # Open and convert image to RGB
-        img = Image.open(image_path).convert('RGB')
-        
-        # Resize image
-        img = img.resize(target_size)
-        
-        # Convert to numpy array and flatten
-        img_array = np.array(img)
-        img_flattened = img_array.flatten()
-        
-        # Normalize pixel values to 0-1 range
-        img_normalized = img_flattened / 255.0
-        
-        return img_normalized.reshape(1, -1)  # Reshape for model prediction
-    except Exception as e:
-        print(f"Error preprocessing image: {e}")
-        return None
+@app.route('/api/profile/<user_id>', methods=['GET'])
+@login_required
+def get_profile_api(user_id):
+    """API endpoint untuk mendapatkan data profil pengguna untuk modal AJAX"""
+    # Pastikan pengguna yang login memiliki akses ke profil ini
+    current_user_id = session['user_id']
+    
+    # Cek apakah pengguna yang diminta ada dalam daftar kecocokan pengguna saat ini
+    matches = find_comprehensive_matches(current_user_id)
+    match_data = next((match for match in matches if match['user_id'] == user_id), None)
+    
+    if not match_data:
+        return jsonify({'error': 'Profil tidak ditemukan atau Anda tidak memiliki akses'}), 404
+    
+    # Ambil data profil pengguna
+    user = User.query.get(user_id)
+    if not user or not user.profile:
+        return jsonify({'error': 'Profil tidak ditemukan'}), 404
+    
+    # Siapkan data profil untuk respons JSON
+    profile_data = user.profile.to_dict()
+    profile_data['total_score'] = round(match_data['total_score'] * 100, 1)
+    
+    return jsonify(profile_data)
 
 # Function to predict cluster for user photo
 def predict_user_cluster(image_path, gender):
@@ -356,100 +472,68 @@ def predict_user_cluster(image_path, gender):
     Predict cluster ID for user's profile photo
     """
     try:
-        # Preprocess image
-        processed_image = preprocess_image_for_clustering(image_path)
-        if processed_image is None:
-            return None
-        
         # Load appropriate model based on gender
         model_filename = f'model_{gender.lower()}.pkl'
-        model_path = os.path.join('static', 'models', model_filename)
-        
+        model_path = os.path.join('static', 'models', model_filename)        
         if not os.path.exists(model_path):
             print(f"Model file not found: {model_path}")
             return None
         
-        # Load clustering model
-        with open(model_path, 'rb') as f:
-            clustering_model = pickle.load(f)
+        # Load clustering model using joblib instead of pickle
+        clustering_model = joblib.load(model_path)
         
-        # Predict cluster
-        cluster_id = clustering_model.predict(processed_image)[0]
+        # Predict cluster directly from the image path
+        # Image sudah masuk ke pkl, tidak perlu preprocessing
+        cluster_id = clustering_model.predict([image_path])[0]
         return int(cluster_id)
     
     except Exception as e:
         print(f"Error predicting cluster: {e}")
         return None
 
-@app.route('/text-test', methods=['GET', 'POST'])
-def text_test():
+@app.route('/preferences-text', methods=['GET', 'POST'])
+@login_required
+def preferences_text():
     if 'user_id' not in session:
         flash('Please log in to access this page.', 'error')
         return redirect(url_for('index'))
     
     if request.method == 'POST':
         try:
-            # Get answers from form
-            q1 = request.form.get('q1', '').strip()
-            q2 = request.form.get('q2', '').strip()
-            q3 = request.form.get('q3', '').strip()
-            q4 = request.form.get('q4', '').strip()
-            q5 = request.form.get('q5', '').strip()
+            user_id = session['user_id']
+            existing_test = UserPreferencesSimilarity.query.filter_by(user_id=user_id).first()
             
-            # Validate that all questions are answered
-            if not all([q1, q2, q3, q4, q5]):
-                flash('Please answer all questions.', 'error')
-                # Get existing text test for prefill
-                user_id = session['user_id']
-                existing_test = UserTextTest.query.filter_by(user_id=user_id).first()
-                return render_template('text_test.html', text_test=existing_test)
+            if not existing_test:
+                existing_test = UserPreferencesSimilarity(user_id=user_id)
+                db.session.add(existing_test)
             
-            # Combine all answers into one string
-            combined_text = f"{q1} {q2} {q3} {q4} {q5}"
-            
-            # Generate embedding using sentence-transformers
-            embedding = model.encode(combined_text).tolist()
-            
-            # Check if user already has a text test
-            existing_test = UserTextTest.query.filter_by(user_id=session['user_id']).first()
-            
-            if existing_test:
-                # Update existing test
-                existing_test.q1 = q1
-                existing_test.q2 = q2
-                existing_test.q3 = q3
-                existing_test.q4 = q4
-                existing_test.q5 = q5
-                existing_test.embedding = embedding
-            else:
-                # Create new test
-                text_test = UserTextTest(
-                    user_id=session['user_id'],
-                    q1=q1,
-                    q2=q2,
-                    q3=q3,
-                    q4=q4,
-                    q5=q5,
-                    embedding=embedding
-                )
-                db.session.add(text_test)
+            # Mengambil data dari form
+            existing_test.message_length = int(request.form.get('message_length', 3))
+            existing_test.emoji_frequency = int(request.form.get('emoji_frequency', 3))
+            existing_test.joke_frequency = int(request.form.get('joke_frequency', 3))
+            existing_test.communication_type = int(request.form.get('communication_type', 1))
+            existing_test.message_style = int(request.form.get('message_style', 1))
+            existing_test.allow_informal = True if request.form.get('allow_informal') == 'yes' else False
+            existing_test.abbreviation_frequency = int(request.form.get('abbreviation_frequency', 3))
+            existing_test.punctuation_frequency = int(request.form.get('punctuation_frequency', 3))
+            existing_test.capitalization_sensitive = True if request.form.get('capitalization_sensitive') == 'yes' else False
             
             db.session.commit()
-            flash('Personality test completed successfully!', 'success')
+            flash('Preferensi teks berhasil disimpan!', 'success')
             return redirect(url_for('image_test'))
             
         except Exception as e:
             db.session.rollback()
-            flash(f'An error occurred: {str(e)}', 'error')
+            flash(f'Terjadi kesalahan: {str(e)}', 'error')
             # Get existing text test for prefill
             user_id = session['user_id']
-            existing_test = UserTextTest.query.filter_by(user_id=user_id).first()
-            return render_template('text_test.html', text_test=existing_test)
+            existing_test = UserPreferencesSimilarity.query.filter_by(user_id=user_id).first()
+            return render_template('preferences_text.html', text_preferences=existing_test)
     
     # GET request - load existing data for prefill
     user_id = session['user_id']
-    existing_test = UserTextTest.query.filter_by(user_id=user_id).first()
-    return render_template('text_test.html', text_test=existing_test)
+    existing_test = UserPreferencesSimilarity.query.filter_by(user_id=user_id).first()
+    return render_template('preferences_text.html', text_preferences=existing_test)
 
 @app.route('/image-test', methods=['GET', 'POST'])
 @login_required
@@ -459,47 +543,47 @@ def image_test():
     
     if request.method == 'POST':
         try:
-            # Get preferred cluster from form
-            preferred_cluster_id = request.form.get('preferred_cluster_id')
+            # Get preferred cluster IDs from form (multiple selection)
+            preferred_cluster_ids = request.form.getlist('preferred_cluster_ids')
+            redirect_to = request.form.get('redirect_to', 'match_feed')
             
-            if not preferred_cluster_id:
-                flash('Please select your preferred visual style.', 'error')
+            if not preferred_cluster_ids:
+                flash('Silakan pilih setidaknya satu gaya visual yang Anda sukai.', 'error')
                 return redirect(url_for('image_test'))
             
-            # Check if user already has image test
+            # Get or create image test
             existing_test = UserImageTest.query.filter_by(user_id=user_id).first()
+            if not existing_test:
+                existing_test = UserImageTest(user_id=user_id)
+                db.session.add(existing_test)
             
-            if existing_test:
-                # Update existing test
-                existing_test.preferred_cluster_id = int(preferred_cluster_id)
-                existing_test.updated_at = datetime.utcnow()
-            else:
-                # Create new test
-                image_test = UserImageTest(
-                    user_id=user_id,
-                    preferred_cluster_id=int(preferred_cluster_id)
-                )
-                db.session.add(image_test)
+            # Set preferred cluster IDs
+            existing_test.set_preferred_cluster_ids(preferred_cluster_ids)
             
             db.session.commit()
-            flash('Visual preference test completed successfully!', 'success')
-            return redirect(url_for('match_feed'))
+            flash('Preferensi visual berhasil disimpan!', 'success')
+            
+            # Redirect based on form parameter
+            if redirect_to == 'match_feed':
+                return redirect(url_for('match_feed'))
+            else:
+                return redirect(url_for('image_test'))
             
         except Exception as e:
             db.session.rollback()
-            flash(f'An error occurred: {str(e)}', 'error')
+            flash(f'Terjadi kesalahan: {str(e)}', 'error')
             return redirect(url_for('image_test'))
     
-    # GET request - determine user's gender for showing appropriate cluster images
+    # GET request - determine user's gender for showing appropriate images
     user_gender = 'male'  # default
     if user.profile and user.profile.gender:
-        # Show opposite gender clusters for heterosexual matching
+        # Show opposite gender images for heterosexual matching
         user_gender = 'female' if user.profile.gender.lower() == 'male' else 'male'
     
     # Get existing image test for prefill
     existing_test = UserImageTest.query.filter_by(user_id=user_id).first()
     
-    return render_template('image_test.html', target_gender=user_gender,existing_test=existing_test)
+    return render_template('image_test.html', target_gender=user_gender, existing_test=existing_test)
 
 
 def find_comprehensive_matches(user_id, top_n=10):
@@ -558,12 +642,19 @@ def comprehensive_matches():
             'error': str(e)
         }), 500
 
+# route about
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
 @app.route('/logout')
+@login_required
 def logout():
     logout_user()
-    session.clear()
+    session.clear()  # Bagus sudah dihapus semua
     flash('You have been logged out', 'info')
     return redirect(url_for('index'))
+
 
 @app.errorhandler(404)
 def page_not_found(e):
