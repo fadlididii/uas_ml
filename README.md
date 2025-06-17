@@ -1,4 +1,4 @@
-# HeartLink - Dating App Backend API
+# HeartLink - Dating Web App 
 
 Backend untuk aplikasi dating menggunakan Flask, SQLAlchemy, dan PostgreSQL.
 
