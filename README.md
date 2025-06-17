@@ -23,6 +23,8 @@ source env/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
+1. Pada requirements.txt file dlib perlu disesuaikan path nya!!! dan btw ini khusus (py ver 3.12)
+2. kalau python versi lain bisa download file di -> https://github.com/z-mahmud22/Dlib_Windows_Python3.x
 
 ### 4. Setup PostgreSQL Database
 1. Install PostgreSQL
@@ -33,7 +35,7 @@ CREATE DATABASE dating_app_dev;
 ```
 
 ### 5. Konfigurasi Environment
-1. Copy file `.env` dan sesuaikan konfigurasi database:
+1. Buat file `.env` dan sesuaikan konfigurasi database:
 ```env
 
 # Flask Configuration
