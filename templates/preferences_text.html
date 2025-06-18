@@ -222,12 +222,10 @@
                         <h3 class="question-title">💬 Gaya Komunikasi</h3>
                         <div class="question-item">
                             <label class="question-label">Pilih gaya komunikasi yang paling nyaman:</label>
-                            <div class="select-wrapper">
-                                <select name="communication_type" class="form-select">
-                                    <option value="1" {{ 'selected' if text_preferences and text_preferences.communication_type == 1 else '' }}>Pesan Teks</option>
-                                    <option value="2" {{ 'selected' if text_preferences and text_preferences.communication_type == 2 else '' }}>Pesan Suara/Telepon</option>
-                                </select>
-                            </div>
+                            <select name="communication_type" class="form-select text-input">
+                                <option value="1" {{ 'selected' if text_preferences and text_preferences.communication_type == 1 else '' }}>Pesan Teks</option>
+                                <option value="2" {{ 'selected' if text_preferences and text_preferences.communication_type == 2 else '' }}>Pesan Suara/Telepon</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -238,13 +236,11 @@
                         <h3 class="question-title">📝 Gaya Berpesan</h3>
                         <div class="question-item">
                             <label class="question-label">Pilih gaya berpesan anda:</label>
-                            <div class="select-wrapper">
-                                <select name="message_style" class="form-select">
-                                    <option value="1" {{ 'selected' if text_preferences and text_preferences.message_style == 1 else '' }}>Baku/Formal/Serius</option>
-                                    <option value="2" {{ 'selected' if text_preferences and text_preferences.message_style == 2 else '' }}>Bebas/Informal/Tidak Serius</option>
-                                    <option value="3" {{ 'selected' if text_preferences and text_preferences.message_style == 3 else '' }}>Campuran</option>
-                                </select>
-                            </div>
+                            <select name="message_style" class="form-select text-input">
+                                <option value="1" {{ 'selected' if text_preferences and text_preferences.message_style == 1 else '' }}>Baku/Formal/Serius</option>
+                                <option value="2" {{ 'selected' if text_preferences and text_preferences.message_style == 2 else '' }}>Bebas/Informal/Tidak Serius</option>
+                                <option value="3" {{ 'selected' if text_preferences and text_preferences.message_style == 3 else '' }}>Campuran</option>
+                            </select>
                         </div>
                         <div class="question-item">
                             <label class="question-label">Apakah anda nyaman dengan gaya bahasa obrolan yang bebas, informal, dan tidak serius?</label>
@@ -366,6 +362,9 @@
                     // Show success message
                     showSuccessMessage();
                     
+                    // Hapus data dari localStorage setelah berhasil disimpan ke server
+                    localStorage.removeItem('textPreferencesState');
+                    
                     // Redirect to image test after short delay
                     setTimeout(() => {
                         window.location.href = '/image-test';
@@ -400,35 +399,42 @@
         }
 
         function loadFormState() {
-            const savedState = localStorage.getItem('textPreferencesState');
-            if (!savedState) return;
+            // Cek apakah ada data dari database (text_preferences)
+            // Jika ada data dari database, jangan load dari localStorage
+            const hasServerData = {{ 'true' if text_preferences else 'false' }};
             
-            try {
-                const state = JSON.parse(savedState);
-                const form = document.getElementById('textTestForm');
+            // Hanya load dari localStorage jika tidak ada data dari database
+            if (!hasServerData) {
+                const savedState = localStorage.getItem('textPreferencesState');
+                if (!savedState) return;
                 
-                // Restore all form values
-                Object.keys(state).forEach(key => {
-                    const elements = form.querySelectorAll(`[name="${key}"]`);
+                try {
+                    const state = JSON.parse(savedState);
+                    const form = document.getElementById('textTestForm');
                     
-                    elements.forEach(element => {
-                        if (element.type === 'radio') {
-                            if (element.value === state[key]) {
-                                element.checked = true;
-                                // Tambahkan class selected untuk visual feedback
-                                element.closest('.radio-item').classList.add('selected');
-                                updateRadioButtonVisuals(key);
+                    // Restore all form values
+                    Object.keys(state).forEach(key => {
+                        const elements = form.querySelectorAll(`[name="${key}"]`);
+                        
+                        elements.forEach(element => {
+                            if (element.type === 'radio') {
+                                if (element.value === state[key]) {
+                                    element.checked = true;
+                                    // Tambahkan class selected untuk visual feedback
+                                    element.closest('.radio-item').classList.add('selected');
+                                    updateRadioButtonVisuals(key);
+                                }
+                            } else if (element.type === 'range') {
+                                element.value = state[key];
+                            } else {
+                                element.value = state[key];
                             }
-                        } else if (element.type === 'range') {
-                            element.value = state[key];
-                        } else {
-                            element.value = state[key];
-                        }
+                        });
                     });
-                });
-                
-            } catch (error) {
-                console.error('Error loading form state:', error);
+                    
+                } catch (error) {
+                    console.error('Error loading form state:', error);
+                }
             }
         }
 
@@ -472,7 +478,7 @@
                 font-weight: 500;
                 animation: slideIn 0.3s ease;
             `;
-            notification.innerHTML = '✅ Preferensi berhasil disimpan! Menuju tes visual';
+            notification.innerHTML = '✅ Preferensi text berhasil disimpan!';
             
             // Add slide animation
             const style = document.createElement('style');

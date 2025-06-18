@@ -18,8 +18,6 @@
             position: relative;
         }
 
-
-
         .step-circle {
             width: 60px;
             height: 60px;
@@ -361,7 +359,9 @@
                 });
                 
                 // Add loading state and success message on submit
-                form.addEventListener('submit', function() {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault(); // Prevent default form submission
+                    
                     const submitBtn = document.querySelector('.btn-submit');
                     if (submitBtn) {
                         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Menyimpan...';
@@ -370,11 +370,53 @@
                     
                     // Show success message after a short delay to simulate processing
                     setTimeout(function() {
-                        showMessage('✅ Preferensi berhasil disimpan!', 'success');
+                        showSuccessMessage();
+                        
+                        // Submit the form after showing the notification
+                        setTimeout(function() {
+                            form.submit();
+                        }, 1500); // Wait 1.5 seconds before submitting the form
                     }, 500);
                 });
             }
         });
+        
+        function showSuccessMessage() { 
+            // Create success notification 
+            const notification = document.createElement('div'); 
+            notification.style.cssText = ` 
+                position: fixed; 
+                top: 20px; 
+                right: 20px; 
+                background: linear-gradient(135deg, #28a745, #20c997); 
+                color: white; 
+                padding: 15px 25px; 
+                border-radius: 10px; 
+                box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3); 
+                z-index: 9999; 
+                font-weight: 500; 
+                animation: slideIn 0.3s ease; 
+            `; 
+            notification.innerHTML = '✅ Preferensi berhasil disimpan! Menuju preferensi teks'; 
+            
+            // Add slide animation 
+            const style = document.createElement('style'); 
+            style.textContent = ` 
+                @keyframes slideIn { 
+                    from { transform: translateX(100%); opacity: 0; } 
+                    to { transform: translateX(0); opacity: 1; } 
+                } 
+            `; 
+            document.head.appendChild(style); 
+            
+            document.body.appendChild(notification); 
+            
+            // Remove notification after 3 seconds 
+            setTimeout(() => { 
+                notification.remove(); 
+                style.remove(); 
+            }, 3000); 
+        }
     </script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>

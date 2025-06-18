@@ -2,10 +2,10 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from flask_migrate import Migrate
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.utils import secure_filename
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 from config import config
 from models import db, User, UserProfile, UserPreferencesSubset, UserPreferencesSimilarity, UserImageTest
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from sklearn.metrics.pairwise import cosine_similarity
 from api_routes import api
 import numpy as np
@@ -89,6 +89,9 @@ def login():
         # 2. Check if user has preferences
         elif not user.preferences_subset:
             return redirect(url_for('preferences'))
+        
+        elif not user.preferences_similarity:
+            return redirect(url_for('preferences_similarity'))
         
         # 3. Check if user has completed image test
         elif not user.image_tests:
@@ -327,11 +330,20 @@ def preferences():
                 subset_prefs = UserPreferencesSubset(user_id=user.profile.user_id)
                 db.session.add(subset_prefs)
             
-            # Get or create similarity preferences
+            # Get similarity preferences (but don't create new one)
             similarity_prefs = user.preferences_similarity
-            if not similarity_prefs:
-                similarity_prefs = UserPreferencesSimilarity(user_id=user.profile.user_id)
-                db.session.add(similarity_prefs)
+            # Cek apakah similarity preferences sudah diisi lengkap
+            has_complete_similarity_prefs = similarity_prefs and all([
+                similarity_prefs.message_length,
+                similarity_prefs.emoji_frequency,
+                similarity_prefs.joke_frequency,
+                similarity_prefs.communication_type,
+                similarity_prefs.message_style,
+                similarity_prefs.allow_informal is not None,
+                similarity_prefs.abbreviation_frequency,
+                similarity_prefs.punctuation_frequency,
+                similarity_prefs.capitalization_sensitive is not None
+            ])
             
             # Update subset preferences from form data
             # Preferensi Usia
@@ -385,7 +397,9 @@ def preferences():
             flash('Preferensi berhasil diperbarui!', 'success')
             
             # Redirect ke halaman berikutnya
-            if not user.profile.image_test:
+            if not has_complete_similarity_prefs:
+                return redirect(url_for('preferences_text'))
+            elif not user.profile.image_test:
                 return redirect(url_for('image_test'))
             else:
                 return redirect(url_for('match_feed'))
@@ -434,12 +448,57 @@ def match_feed():
             profile_data['total_score'] = round(match_data['total_score'] * 100, 1)
             profile_data['text_similarity'] = round(match_data['text_similarity'] * 100, 1)
             profile_data['cluster_similarity'] = round(match_data['cluster_similarity'] * 100, 1)
+            
+            # Format date of birth for display
+            if profile_data.get('date_of_birth'):
+                dob = profile_data['date_of_birth']
+                if isinstance(dob, str):
+                    try:
+                        dob = datetime.strptime(dob, '%Y-%m-%d')
+                    except ValueError:
+                        pass
+                if isinstance(dob, datetime):
+                    profile_data['date_of_birth'] = dob.strftime('%d %B %Y')
+            
+            # Ensure WhatsApp number is properly formatted (remove any '+' prefix)
+            if profile_data.get('whatsapp'):
+                profile_data['whatsapp'] = profile_data['whatsapp'].lstrip('+')
+            
+            # Add photo URL if available
+            if profile_data.get('photo_url'):
+                # Make sure the photo URL is properly formatted for template
+                if not profile_data['photo_url'].startswith('/static/'):
+                    profile_data['photo_url'] = url_for('static', filename='uploads/' + profile_data['photo_url'])
+            
+            # Add chat style data from UserPreferencesSimilarity
+            user_pref_similarity = UserPreferencesSimilarity.query.filter_by(user_id=profile_data['user_id']).first()
+            if user_pref_similarity:
+                profile_data['message_length'] = user_pref_similarity.message_length
+                profile_data['emoji_frequency'] = user_pref_similarity.emoji_frequency
+                profile_data['joke_frequency'] = user_pref_similarity.joke_frequency
+                profile_data['communication_type'] = user_pref_similarity.communication_type
+                profile_data['message_style'] = user_pref_similarity.message_style
+                profile_data['abbreviation_frequency'] = user_pref_similarity.abbreviation_frequency
+                profile_data['punctuation_frequency'] = user_pref_similarity.punctuation_frequency
+                profile_data['active_time'] = user_pref_similarity.get_active_time_list()
+            
             match_profiles.append(profile_data)
     
     # Add current datetime for age calculation in template
     now = datetime.now()
     
-    return render_template('match_feed.html', user=user, matches=match_profiles, now=now)
+    # Calculate average compatibility score
+    if match_profiles:
+        avg_score = sum(profile['total_score'] for profile in match_profiles) / len(match_profiles)
+    else:
+        avg_score = 0
+    
+    # Count high matches (>80% compatibility)
+    high_matches = sum(1 for profile in match_profiles if profile['total_score'] > 80)
+    
+    return render_template('match_feed.html', user=user, matches=match_profiles, now=now, 
+                          total_matches=len(match_profiles), avg_score=int(avg_score), 
+                          high_matches=high_matches)
 
 @app.route('/api/profile/<user_id>', methods=['GET'])
 @login_required
@@ -586,7 +645,7 @@ def image_test():
     return render_template('image_test.html', target_gender=user_gender, existing_test=existing_test)
 
 
-def find_comprehensive_matches(user_id, top_n=10):
+def find_comprehensive_matches(user_id):
     """
     Find matches using the new staged matching system
     """
@@ -600,8 +659,8 @@ def find_comprehensive_matches(user_id, top_n=10):
             print(f"No matches found for user {user_id}")
             return []
         
-        # Limit to top_n results
-        return final_matches[:top_n]
+        # Return all matches without limiting
+        return final_matches
         
     except Exception as e:
         print(f"Error in find_comprehensive_matches: {e}")
