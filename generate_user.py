@@ -10,7 +10,7 @@ def create_dummy_users(n=10):
     with app.app_context():
         for i in range(n):
             user_id = str(uuid.uuid4())
-            email = f'testuser{i+1}@example.com'
+            email = f'testt{i+1}@example.com'
             password = generate_password_hash('password123')
 
             # 1. User
@@ -34,6 +34,8 @@ def create_dummy_users(n=10):
                 education='Bachelor',
                 hobbies='Running, Reading',
                 language_used='Indonesian, English',
+                whatsapp=f'62812345{i:04d}',
+                instagram=f'user{i+1}_tester',
                 smoking=False,
                 alcohol=False,
                 relationship_goal='serious',
