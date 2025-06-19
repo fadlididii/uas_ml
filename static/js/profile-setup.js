@@ -378,10 +378,10 @@ function validateAge() {
         age--;
     }
     
-    const isValid = age >= 18;
+    const isValid = age >= 21;
     
     if (!isValid) {
-        showFieldError(birthDateInput, 'Anda harus berusia minimal 18 tahun');
+        showFieldError(birthDateInput, 'Anda harus berusia minimal 21 tahun');
     } else {
         clearFieldError(birthDateInput);
     }
