@@ -7,10 +7,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom/preferences.css') }}">
+
     <!-- Favicon -->
      
     <link rel="icon" type="image/png" href="/static/img/favicon.png">
+  
     <style>
         /* Variables */
         :root {
@@ -438,6 +439,7 @@
             }
         }
     </style>
+
 </head>
 <body>
     <!-- Animated Background -->
@@ -449,7 +451,6 @@
     </div>
 
     <!-- Navigation Bar -->
-    {% set active_page = 'match_feed' %}
     {% include 'navbar_logged_in.html' %}
 
     <header class="header">
@@ -461,8 +462,10 @@
         <div class="container">
             <!-- Page Header -->
             <div class="page-header">
+
                 <h1 class="card-title-match">💕 Temukan Pasangan Serasimu</h1>
                 <p class="card-subtitle-match">Mulai perjalananmu bersama seseorang yang cocok dan siap membangun cerita bersama.</p>
+
             </div>
 
             <!-- Stats Bar -->
@@ -491,239 +494,346 @@
             </div>
             {% endif %}
 
-            {% if matches %}
-                {% for match_batch in matches|batch(3) %}
-                <div class="row match-row">
-                    {% for match in match_batch %}
-                    <div class="col-md-4 col-sm-6 match-col mb-4">
-                        <div class="match-card">
-                            <div class="text-center">
-                                <div class="profile-photo">
-                                    {% if match.photo_url %}
-                                        <img src="{{ match.photo_url }}" alt="Profile Photo">
-                                    {% else %}
-                                        <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #FF6B6B, #4ECDC4); border-radius: 50%;">
-                                            <i class="fas fa-user fa-2x text-white"></i>
+            <div class="filter-container mb-4">
+                <div class="filter-wrapper">
+                    <label for="matchLimit" class="filter-label">Tampilkan:</label>
+                    <select id="matchLimit" class="filter-select" onchange="filterMatches(this.value)">
+                        <option value="0">Semua</option>
+                        <option value="5">5 Match</option>
+                        <option value="10" selected>10 Match</option>
+                        <option value="20">20 Match</option>
+                        <option value="50">50 Match</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    {% if matches %}
+                        {% for match in matches %}
+                        <!-- Match Card for {{ match.first_name }} {{ match.last_name }} -->
+                        <div class="match-card" onclick="flipCard(this)">
+                            <div class="flip-card-inner">
+                                <!-- Front Side -->
+                                <div class="flip-card-front">
+                                    <div class="row align-items-start">
+                                        <div class="col-md-4 text-center">
+                                            <div class="profile-photo">
+                                                {% if match.photo_url %}
+                                                <img src="{{ match.photo_url }}" alt="Profile Photo">
+                                                {% else %}
+                                                <img src="/static/img/avatar1.png" alt="Profile Photo">
+                                                {% endif %}
+                                            </div>
+                                            <div class="match-score">
+                                                <span class="score-badge">{{ match.total_score }}% Match</span>
+                                            </div>
+                                            <div class="action-buttons">
+                                                {% if match.whatsapp %}
+                                                <a href="https://wa.me/{{ match.whatsapp }}" target="_blank" class="btn btn-whatsapp">
+                                                    <i class="fab fa-whatsapp"></i> WhatsApp
+                                                </a>
+                                                {% else %}
+                                                <a href="https://wa.me/6281234567890" target="_blank" class="btn btn-whatsapp">
+                                                    <i class="fab fa-whatsapp"></i> WhatsApp
+                                                </a>
+                                                {% endif %}
+                                                
+                                                {% if match.instagram %}
+                                                <a href="https://instagram.com/{{ match.instagram }}" target="_blank" class="btn btn-instagram">
+                                                    <i class="fab fa-instagram"></i> Instagram
+                                                </a>
+                                                {% else %}
+                                                <a href="https://instagram.com/heartlink" target="_blank" class="btn btn-instagram">
+                                                    <i class="fab fa-instagram"></i> Instagram
+                                                </a>
+                                                {% endif %}
+                                            </div>
                                         </div>
+                                        <div class="col-md-8">
+                                            <h3 class="match-name">{{ match.first_name }} {{ match.last_name }}</h3>
+                                            
+                                            <div class="info-grid">
+                                                <div class="info-item">
+                                                    <i class="fas fa-praying-hands"></i>
+                                                    <span>{{ match.religion }}</span>
+                                                </div>
+                                                <div class="info-item">
+                                                    <i class="fas fa-birthday-cake"></i>
+                                                    <span>{{ match.date_of_birth }} ({{ match.age }} tahun)</span>
+                                                </div>
+                                                <div class="info-item">
+                                                    <i class="fas fa-map-marker-alt"></i>
+                                                    <span>{{ match.location }}</span>
+                                                </div>
+                                                <div class="info-item">
+                                                    <i class="fas fa-graduation-cap"></i>
+                                                    <span>{{ match.education }}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="bio-section">
+                                                <i class="fas fa-quote-left" style="opacity: 0.5; margin-right: 0.5rem;"></i>
+                                                {{ match.bio }}
+                                                <i class="fas fa-quote-right" style="opacity: 0.5; margin-left: 0.5rem;"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Back Side -->
+                                <div class="flip-card-back">
+                                    <h3 class="match-name text-center mb-4">{{ match.first_name }} {{ match.last_name }}</h3>
+                                    
+                                    <div class="detail-section">
+                                        <h5><i class="fas fa-heart"></i> Lifestyle & Relationship</h5>
+                                        <div class="lifestyle-grid">
+                                            <div class="lifestyle-item">
+                                                <i class="fas fa-smoking"></i>
+                                                <div>
+                                                    <div class="lifestyle-label">Merokok</div>
+                                                    <div class="lifestyle-value">{{ 'Ya' if match.smoking else 'Tidak' }}</div>
+                                                </div>
+                                            </div>
+                                            <div class="lifestyle-item">
+                                                <i class="fas fa-wine-glass-alt"></i>
+                                                <div>
+                                                    <div class="lifestyle-label">Alkohol</div>
+                                                    <div class="lifestyle-value">{{ 'Ya' if match.alcohol else 'Tidak' }}</div>
+                                                </div>
+                                            </div>
+                                            <div class="lifestyle-item">
+                                                <i class="fas fa-ring"></i>
+                                                <div>
+                                                    <div class="lifestyle-label">Tujuan Hubungan</div>
+                                                    <div class="lifestyle-value">{{ 'Serius' if match.relationship_goal == 'serious' else 'Kasual' }}</div>
+                                                </div>
+                                            </div>
+                                            {% if match.care_social_issues is defined and match.care_social_issues %}
+                                            <div class="lifestyle-item">
+                                                <i class="fas fa-hands-helping"></i>
+                                                <div>
+                                                    <div class="lifestyle-label">Kepedulian Sosial</div>
+                                                    <div class="social-care-bar">
+                                                        <div class="social-care-fill" style="width: {{ match.care_social_issues * 20 }}%"></div>
+                                                    </div>
+                                                    <div class="lifestyle-value">{{ match.care_social_issues }}/5</div>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    {% if match.message_length is defined or match.emoji_frequency is defined or match.joke_frequency is defined %}
+                                    <div class="detail-section">
+                                        <h5><i class="fas fa-comments"></i> Gaya Chatting</h5>
+                                        <div class="chatting-stats">
+                                            {% if match.message_length is defined and match.message_length %}
+                                            <div class="chatting-stat">
+                                                <div class="stat-title">Panjang Pesan</div>
+                                                <div class="stat-value">{{ match.message_length }}/5 <i class="fas fa-align-left chatting-icon"></i></div>
+                                            </div>
+                                            {% endif %}
+                                            {% if match.emoji_frequency is defined and match.emoji_frequency %}
+                                            <div class="chatting-stat">
+                                                <div class="stat-title">Penggunaan Emoji</div>
+                                                <div class="stat-value">{{ match.emoji_frequency }}/5 <i class="fas fa-smile chatting-icon"></i></div>
+                                            </div>
+                                            {% endif %}
+                                            {% if match.joke_frequency is defined and match.joke_frequency %}
+                                            <div class="chatting-stat">
+                                                <div class="stat-title">Humor</div>
+                                                <div class="stat-value">{{ match.joke_frequency }}/5 <i class="fas fa-laugh chatting-icon"></i></div>
+                                            </div>
+                                            {% endif %}
+                                            {% if match.communication_type is defined and match.communication_type %}
+                                            <div class="chatting-stat">
+                                                <div class="stat-title">Gaya Komunikasi</div>
+                                                <div class="stat-value">
+                                                    {% if match.communication_type == 1 %}
+                                                    Teks <i class="fas fa-keyboard chatting-icon"></i>
+                                                    {% elif match.communication_type == 2 %}
+                                                    Suara <i class="fas fa-microphone chatting-icon"></i>
+                                                    {% else %}
+                                                    Campuran <i class="fas fa-comments chatting-icon"></i>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            {% if match.message_style is defined and match.message_style %}
+                                            <div class="chatting-stat">
+                                                <div class="stat-title">Gaya Pesan</div>
+                                                <div class="stat-value">
+                                                    {% if match.message_style == 1 %}
+                                                    Formal <i class="fas fa-comment-dots chatting-icon"></i>
+                                                    {% elif match.message_style == 2 %}
+                                                    Informal <i class="fas fa-comment-dots chatting-icon"></i>
+                                                    {% else %}
+                                                    Campuran <i class="fas fa-comment-dots chatting-icon"></i>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            {% if match.abbreviation_frequency is defined and match.abbreviation_frequency %}
+                                            <div class="chatting-stat">
+                                                <div class="stat-title">Singkatan</div>
+                                                <div class="stat-value">{{ match.abbreviation_frequency }}/5 <i class="fas fa-font chatting-icon"></i></div>
+                                            </div>
+                                            {% endif %}
+                                            {% if match.punctuation_frequency is defined and match.punctuation_frequency %}
+                                            <div class="chatting-stat">
+                                                <div class="stat-title">Tanda Baca</div>
+                                                <div class="stat-value">{{ match.punctuation_frequency }}/5 <i class="fas fa-exclamation chatting-icon"></i></div>
+                                            </div>
+                                            {% endif %}
+                                            {% if match.active_time is defined and match.active_time %}
+                                            <div class="chatting-stat">
+                                                <div class="stat-title">Waktu Aktif</div>
+                                                <div class="stat-value">
+                                                    {% if 1 in match.active_time %}Pagi{% endif %}
+                                                    {% if 2 in match.active_time %}Siang{% endif %}
+                                                    {% if 3 in match.active_time %}Sore{% endif %}
+                                                    {% if 4 in match.active_time %}Malam{% endif %}
+                                                    <i class="fas fa-clock chatting-icon"></i>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                     {% endif %}
+                                    
+                                    {% if match.hobbies %}
+                                    <div class="detail-section">
+                                        <h5><i class="fas fa-heartbeat"></i> Hobi & Minat</h5>
+                                        <div class="bio-section">
+                                            {{ match.hobbies }}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="action-buttons mt-3">
+                                        {% if match.whatsapp %}
+                                        <a href="https://wa.me/{{ match.whatsapp }}" target="_blank" class="btn btn-whatsapp">
+                                            <i class="fab fa-whatsapp"></i> WhatsApp
+                                        </a>
+                                        {% endif %}
+                                        {% if match.instagram %}
+                                        <a href="https://instagram.com/{{ match.instagram }}" target="_blank" class="btn btn-instagram">
+                                            <i class="fab fa-instagram"></i> Instagram
+                                        </a>
+                                        {% endif %}
+                                    </div>
                                 </div>
-                                <h3 class="match-name">{{ match.first_name }} {{ match.last_name }}</h3>
-                                <span class="similarity-badge">
-                                    <i class="fas fa-heart"></i> {{ match.total_score }}% Match
-                                </span>
-                            </div>
-                            
-                            <div class="info-grid">
-                                {% if match.age %}
-                                <div class="info-item">
-                                    <i class="fas fa-birthday-cake"></i>
-                                    <span>{{ match.age }} tahun</span>
-                                </div>
-                                {% endif %}
-                                
-                                {% if match.location %}
-                                <div class="info-item">
-                                    <i class="fas fa-map-marker-alt"></i>
-                                    <span>{{ match.location }}</span>
-                                </div>
-                                {% endif %}
-                                
-                                {% if match.education %}
-                                <div class="info-item">
-                                    <i class="fas fa-graduation-cap"></i>
-                                    <span>{{ match.education }}</span>
-                                </div>
-                                {% endif %}
-                                
-                                {% if match.relationship_goal %}
-                                <div class="info-item">
-                                    <i class="fas fa-heart"></i>
-                                    <span>{{ match.relationship_goal }}</span>
-                                </div>
-                                {% endif %}
-                                
-                                {% if match.hobbies %}
-                                <div class="info-item">
-                                    <i class="fas fa-gamepad"></i>
-                                    <span>{{ match.hobbies }}</span>
-                                </div>
-                                {% endif %}
-                                
-                                {% if match.whatsapp %}
-                                <div class="info-item">
-                                    <i class="fab fa-whatsapp"></i>
-                                    <span>{{ match.whatsapp }}</span>
-                                </div>
-                                {% endif %}
-                                
-                                {% if match.instagram %}
-                                <div class="info-item">
-                                    <i class="fab fa-instagram"></i>
-                                    <span>{{ match.instagram }}</span>
-                                </div>
-                                {% endif %}
-                            </div>
-                            
-                            {% if match.bio %}
-                            <div class="bio-section">
-                                <i class="fas fa-quote-left" style="opacity: 0.5; margin-right: 0.5rem;"></i>
-                                {{ match.bio }}
-                                <i class="fas fa-quote-right" style="opacity: 0.5; margin-left: 0.5rem;"></i>
-                            </div>
-                            {% endif %}
-                            
-                            <div class="action-buttons">
-                                <a href="#" class="btn-profile" onclick="showProfileModal('{{ match.user_id }}'); return false;">
-                                    <i class="fas fa-user"></i> Lihat Profil
-                                </a>
                             </div>
                         </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endfor %}
-            {% else %}
-                <div class="no-matches">
-                    <div class="no-matches-icon">
-                        <i class="fas fa-heart-broken"></i>
-                    </div>
-                    <h3 style="color: #2c3e50; margin-bottom: 1rem;">Belum Ada Kecocokan</h3>
-                    <p style="color: #7f8c8d; margin-bottom: 2rem; font-size: 1.1rem;">Jangan khawatir! Lengkapi profil dan tes Anda untuk menemukan orang-orang yang memiliki kesamaan minat dengan Anda.</p>
-                    
-                    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                        <a href="{{ url_for('profile_setup') }}" class="btn-profile">
-                            <i class="fas fa-user-edit"></i> Lengkapi Profil
-                        </a>
-                        <a href="{{ url_for('preferences_text') }}" class="btn-profile">
-                            <i class="fas fa-brain"></i> Ambil Tes Kepribadian
-                        </a>
-                        <a href="{{ url_for('image_test') }}" class="btn-profile">
-                            <i class="fas fa-images"></i> Tes Preferensi Visual
-                        </a>
-                    </div>
-                    
-                    <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(102, 126, 234, 0.1); border-radius: 15px;">
-                        <h5 style="color: #667eea; margin-bottom: 1rem;"><i class="fas fa-lightbulb"></i> Tips untuk Mendapatkan Kecocokan yang Lebih Baik:</h5>
-                        <ul style="text-align: left; color: #2c3e50; list-style: none; padding: 0;">
-                            <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #4CAF50; margin-right: 0.5rem;"></i> Unggah foto profil yang jelas</li>
-                            <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #4CAF50; margin-right: 0.5rem;"></i> Tulis bio yang menarik</li>
-                            <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #4CAF50; margin-right: 0.5rem;"></i> Lengkapi semua pertanyaan kepribadian</li>
-                            <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #4CAF50; margin-right: 0.5rem;"></i> Atur preferensi visual Anda</li>
-                        </ul>
-                    </div>
-                </div>
-            {% endif %}
-        </div>
-    </div>
+                        {% endfor %}
+                  {% else %}
+                      <div class="no-matches">
+                          <div class="no-matches-icon">
+                              <i class="fas fa-heart-broken"></i>
+                          </div>
+                          <h3 style="color: #2c3e50; margin-bottom: 1rem;">Belum Ada Kecocokan</h3>
+                          <p style="color: #7f8c8d; margin-bottom: 2rem; font-size: 1.1rem;">Jangan khawatir! Lengkapi profil dan tes Anda untuk menemukan orang-orang yang memiliki kesamaan minat dengan Anda.</p>
 
-    
+                          <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                              <a href="{{ url_for('profile_setup') }}" class="btn-profile">
+                                  <i class="fas fa-user-edit"></i> Lengkapi Profil
+                              </a>
+                              <a href="{{ url_for('preferences_text') }}" class="btn-profile">
+                                  <i class="fas fa-brain"></i> Ambil Tes Kepribadian
+                              </a>
+                              <a href="{{ url_for('image_test') }}" class="btn-profile">
+                                  <i class="fas fa-images"></i> Tes Preferensi Visual
+                              </a>
+                          </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Profile Modal -->
-    <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content" style="border-radius: var(--border-radius); overflow: hidden; border: none; box-shadow: var(--card-shadow);">
-                <div class="modal-header" style="background: var(--gradient-primary); color: white; border-bottom: none;">
-                    <h5 class="modal-title" id="profileModalLabel">Profil Lengkap</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" style="padding: 2rem;">
-                    <div class="text-center mb-4" id="profile-loading">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <p class="mt-2">Memuat profil...</p>
-                    </div>
-                    <div id="profile-content" style="display: none;">
-                        <div class="row">
-                            <div class="col-md-4 text-center mb-4">
-                                <div class="profile-photo mx-auto" style="width: 150px; height: 150px;">
-                                    <img id="modal-profile-photo" src="" alt="Profile Photo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                                </div>
-                                <h3 id="modal-profile-name" class="mt-3" style="font-weight: 600;"></h3>
-                                <div id="modal-match-score" class="similarity-badge mt-2"></div>
-                            </div>
-                            <div class="col-md-8">
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <div class="info-item">
-                                            <i class="fas fa-birthday-cake"></i>
-                                            <span id="modal-age"></span>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <div class="info-item">
-                                            <i class="fas fa-map-marker-alt"></i>
-                                            <span id="modal-location"></span>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <div class="info-item">
-                                            <i class="fas fa-graduation-cap"></i>
-                                            <span id="modal-education"></span>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <div class="info-item">
-                                            <i class="fas fa-heart"></i>
-                                            <span id="modal-relationship-goal"></span>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <div class="info-item">
-                                            <i class="fas fa-gamepad"></i>
-                                            <span id="modal-hobbies"></span>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <div class="info-item">
-                                            <i class="fas fa-pray"></i>
-                                            <span id="modal-religion"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="contact-info mt-4" style="background: rgba(102, 126, 234, 0.1); padding: 1rem; border-radius: var(--border-radius);">
-                                    <h5 style="color: var(--primary-color); margin-bottom: 1rem;"><i class="fas fa-address-book"></i> Informasi Kontak</h5>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-2">
-                                            <div class="info-item">
-                                                <i class="fab fa-whatsapp" style="color: #25D366;"></i>
-                                                <span id="modal-whatsapp"></span>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 mb-2">
-                                            <div class="info-item">
-                                                <i class="fab fa-instagram" style="color: #E1306C;"></i>
-                                                <span id="modal-instagram"></span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="bio-section mt-4" style="background: rgba(255, 107, 107, 0.1); padding: 1.5rem; border-radius: var(--border-radius);">
-                            <h5 style="color: var(--accent-color); margin-bottom: 1rem;"><i class="fas fa-quote-left"></i> Bio</h5>
-                            <p id="modal-bio" style="font-style: italic;"></p>
-                        </div>
-                        
-                    </div>
-                </div>
-                <div class="modal-footer" style="border-top: none; justify-content: center;">
-                    <button type="button" class="btn-profile" data-bs-dismiss="modal">
-                        <i class="fas fa-times"></i> Tutup
-                    </button>
+                          <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(102, 126, 234, 0.1); border-radius: 15px;">
+                              <h5 style="color: #667eea; margin-bottom: 1rem;"><i class="fas fa-lightbulb"></i> Tips untuk Mendapatkan Kecocokan yang Lebih Baik:</h5>
+                              <ul style="text-align: left; color: #2c3e50; list-style: none; padding: 0;">
+                                  <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #4CAF50; margin-right: 0.5rem;"></i> Unggah foto profil yang jelas</li>
+                                  <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #4CAF50; margin-right: 0.5rem;"></i> Tulis bio yang menarik</li>
+                                  <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #4CAF50; margin-right: 0.5rem;"></i> Lengkapi semua pertanyaan kepribadian</li>
+                                  <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #4CAF50; margin-right: 0.5rem;"></i> Atur preferensi visual Anda</li>
+                              </ul>
+                          </div>
+                      </div>
+                  {% endif %}
                 </div>
             </div>
         </div>
     </div>
-    
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Add some interactive effects
+        // Fungsi untuk flip card
+        function flipCard(element) {
+            element.classList.toggle('flipped');
+        }
+
+        // Fungsi untuk filter jumlah match yang ditampilkan
+        function filterMatches(limit) {
+            const matchCards = document.querySelectorAll('.match-card');
+            const limitNum = parseInt(limit);
+            
+            // Jika limit 0, tampilkan semua match
+            if (limitNum === 0) {
+                matchCards.forEach(card => {
+                    card.style.display = '';
+                });
+                return;
+            }
+            
+            // Sembunyikan semua match terlebih dahulu
+            matchCards.forEach((card, index) => {
+                if (index < limitNum) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Update statistik yang ditampilkan
+            updateStats(limitNum);
+        }
+        
+        // Fungsi untuk update statistik berdasarkan jumlah match yang ditampilkan
+        function updateStats(limit) {
+            const matchCards = document.querySelectorAll('.match-card');
+            const totalMatches = matchCards.length;
+            const visibleMatches = limit === 0 ? totalMatches : Math.min(limit, totalMatches);
+            
+            // Hitung rata-rata skor dan jumlah high matches dari kartu yang terlihat
+            let totalScore = 0;
+            let highMatches = 0;
+            
+            matchCards.forEach((card, index) => {
+                if (index < visibleMatches) {
+                    const scoreBadge = card.querySelector('.score-badge');
+                    if (scoreBadge) {
+                        const score = parseInt(scoreBadge.textContent);
+                        totalScore += score;
+                        if (score > 80) {
+                            highMatches++;
+                        }
+                    }
+                }
+            });
+            
+            // Update statistik yang ditampilkan
+            const avgScore = visibleMatches > 0 ? Math.round(totalScore / visibleMatches) : 0;
+            
+            // Update elemen statistik jika ada
+            const statElements = document.querySelectorAll('.stat-number');
+            if (statElements.length >= 3) {
+                statElements[0].textContent = visibleMatches;
+                statElements[1].textContent = avgScore + '%';
+                statElements[2].textContent = highMatches;
+            }
+        }
+
+        // Animasi scroll untuk card
         document.addEventListener('DOMContentLoaded', function() {
-            // Animate match cards on scroll
             const observerOptions = {
                 threshold: 0.1,
                 rootMargin: '0px 0px -50px 0px'
@@ -747,7 +857,7 @@
             });
             
             // Add hover effects to action buttons
-            document.querySelectorAll('.btn-like, .btn-message').forEach(btn => {
+            document.querySelectorAll('.btn-whatsapp, .btn-instagram').forEach(btn => {
                 btn.addEventListener('mouseenter', function() {
                     this.style.transform = 'translateY(-3px) scale(1.05)';
                 });
@@ -756,71 +866,13 @@
                     this.style.transform = 'translateY(0) scale(1)';
                 });
             });
+            
+            // Terapkan filter default saat halaman dimuat
+            const matchLimit = document.getElementById('matchLimit');
+            if (matchLimit) {
+                filterMatches(matchLimit.value);
+            }
         });
-        
-        // Profile Modal Functions
-        function showProfileModal(userId) {
-            // Show modal
-            const profileModal = new bootstrap.Modal(document.getElementById('profileModal'));
-            profileModal.show();
-            
-            // Show loading, hide content
-            document.getElementById('profile-loading').style.display = 'block';
-            document.getElementById('profile-content').style.display = 'none';
-            
-            // Fetch profile data
-            fetch(`/api/profile/${userId}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // Hide loading, show content
-                    document.getElementById('profile-loading').style.display = 'none';
-                    document.getElementById('profile-content').style.display = 'block';
-                    
-                    // Populate modal with data
-                    populateProfileModal(data);
-                })
-                .catch(error => {
-                    console.error('Error fetching profile:', error);
-                    document.getElementById('profile-loading').innerHTML = `
-                        <div class="alert alert-danger" role="alert">
-                            <i class="fas fa-exclamation-triangle"></i> Gagal memuat profil. Silakan coba lagi nanti.
-                        </div>
-                    `;
-                });
-        }
-        
-        function populateProfileModal(profile) {
-            // Basic info
-            document.getElementById('modal-profile-photo').src = profile.photo_url || '/static/img/avatar1.png';
-            document.getElementById('modal-profile-name').textContent = `${profile.first_name} ${profile.last_name}`;
-            document.getElementById('modal-match-score').innerHTML = `<i class="fas fa-heart"></i> ${profile.total_score}% Match`;
-            
-            // Details
-            document.getElementById('modal-age').textContent = profile.age ? `${profile.age} tahun` : 'Tidak diketahui';
-            document.getElementById('modal-location').textContent = profile.location || 'Tidak diketahui';
-            document.getElementById('modal-education').textContent = profile.education || 'Tidak diketahui';
-            document.getElementById('modal-relationship-goal').textContent = profile.relationship_goal || 'Tidak diketahui';
-            document.getElementById('modal-hobbies').textContent = profile.hobbies || 'Tidak diketahui';
-            document.getElementById('modal-religion').textContent = profile.religion || 'Tidak diketahui';
-            
-            // Contact info
-            document.getElementById('modal-whatsapp').textContent = profile.whatsapp || 'Tidak tersedia';
-            document.getElementById('modal-instagram').textContent = profile.instagram || 'Tidak tersedia';
-            
-            // Bio
-            document.getElementById('modal-bio').textContent = profile.bio || 'Pengguna ini belum menambahkan bio.';
-            
-            // Similarity scores
-            document.getElementById('modal-total-score').textContent = `${profile.total_score}%`;
-            document.getElementById('modal-text-similarity').textContent = `${profile.text_similarity}%`;
-            document.getElementById('modal-cluster-similarity').textContent = `${profile.cluster_similarity}%`;
-        }
     </script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
