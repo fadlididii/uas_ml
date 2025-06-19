@@ -1,30 +1,291 @@
-
 {% extends "base.html" %}
 
-{% block title %}Find Your Perfect Match{% endblock %}
+{% block title %}Temukan Pasangan Sempurna{% endblock %}
 
 {% block content %}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Dating App</title>
+    <title>Aplikasi Kencan Modern</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/styles.css">
 
     <link rel="stylesheet" href="/static/css/custom/index.css">
+    <style>
+        .footer {
+    background: linear-gradient(135deg, var(--dark) 0%, #1a1f24 100%);
+    color: white;
+    padding: 60px 0 30px;
+    position: relative;
+    overflow: hidden;
+    margin-top: 50px;
+}
+
+.footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--gradient);
+    animation: gradientShift 3s ease-in-out infinite alternate;
+}
+
+@keyframes gradientShift {
+    0% { opacity: 0.8; }
+    100% { opacity: 1; }
+}
+
+.footer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60"><defs><pattern id="footerPattern" width="60" height="60" patternUnits="userSpaceOnUse"><circle cx="15" cy="15" r="1" fill="white" opacity="0.03"/><circle cx="45" cy="45" r="1" fill="white" opacity="0.03"/><circle cx="30" cy="5" r="0.5" fill="white" opacity="0.02"/></pattern></defs><rect width="60" height="60" fill="url(%23footerPattern)"/></svg>');
+    pointer-events: none;
+}
+
+.footer-content {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 40px;
+    align-items: stretch;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 30px;
+}
+
+/* Footer Info Section */
+.footer-info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.company-details {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 25px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.company-details:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.company-detail-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.company-detail-item:last-child {
+    margin-bottom: 0;
+}
+
+.detail-icon {
+    font-size: 1.2rem;
+    min-width: 30px;
+    padding-top: 3px;
+}
+
+.detail-content h5 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: white;
+}
+
+.detail-content p {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Footer Feedback Section */
+.footer-feedback {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 25px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.footer-feedback:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(255, 107, 107, 0.25);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.feedback-header h4 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.feedback-header h4::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background: var(--gradient);
+    border-radius: 2px;
+}
+
+.feedback-header p {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.btn-feedback {
+    background: var(--gradient);
+    color: white;
+    padding: 14px 30px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    z-index: 1;
+    margin-top: 15px;
+    width: fit-content;
+}
+
+.btn-feedback:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 15px 35px rgba(255, 107, 107, 0.4);
+}
+
+.btn-feedback:active {
+    transform: translateY(-1px) scale(1.02);
+}
+
+/* Footer Bottom */
+.footer-bottom {
+    text-align: center;
+    padding-top: 30px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    position: relative;
+    z-index: 1;
+}
+
+.footer-bottom::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 2px;
+    background: var(--gradient);
+}
+
+.footer-bottom p {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.95rem;
+    font-weight: 400;
+    margin: 0;
+    position: relative;
+}
+
+/* Responsive Design */
+@media (max-width: 900px) {
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .company-details, 
+    .footer-feedback {
+        padding: 20px;
+    }
+    
+    .btn-feedback {
+        padding: 12px 25px;
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer {
+        padding: 40px 0 20px;
+    }
+    
+    .company-detail-item {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .feedback-header h4 {
+        font-size: 1.25rem;
+    }
+    
+    .btn-feedback {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+        /* Animation delays for staggered effects */
+        .feature-card:nth-child(1) { animation-delay: 0.1s; }
+        .feature-card:nth-child(2) { animation-delay: 0.2s; }
+        .feature-card:nth-child(3) { animation-delay: 0.3s; }
+
+        .stat-item:nth-child(1) { animation-delay: 0.1s; }
+        .stat-item:nth-child(2) { animation-delay: 0.2s; }
+        .stat-item:nth-child(3) { animation-delay: 0.3s; }
+
+        .team-member:nth-child(1) { animation-delay: 0.1s; }
+        .team-member:nth-child(2) { animation-delay: 0.2s; }
+        .team-member:nth-child(3) { animation-delay: 0.3s; }
+        .team-member:nth-child(4) { animation-delay: 0.4s; }
+        .team-member:nth-child(5) { animation-delay: 0.5s; }
+    </style>
 </head>
 <body>
 
     <section class="hero">
         <div class="container">
-            <h1>Find Your Perfect Match</h1>
-            <p>Join millions of people discovering meaningful connections through our innovative matching system</p>
+            <h1>Temukan Pasangan Sempurnamu</h1>
+            <p>Bergabunglah dengan ratusan orang yang menemukan pasangan terbaik melalui teknologi penjodohan inovatif kami</p>
             <div class="hero-buttons">
-                <a href="#" id="heroCreateAccountBtn" class="btn btn-primary">Create Account</a>
-                <a href="/about" class="btn btn-outline">Learn More</a>
+                <a href="#" id="heroCreateAccountBtn" class="btn btn-primary">Masuk Sekarang</a>
+                <a href="/about" class="btn btn-outline">Tentang</a>
             </div>
         </div>
     </section>
@@ -32,7 +293,7 @@
     <div id="loginModal" class="modal-overlay hidden">
         <div class="modal-container">
             <div class="modal-header">
-                <h2>Welcome Back</h2>
+                <h2>Selamat Datang Kembali</h2>
                 <button id="closeModal" class="modal-close">&times;</button>
             </div>
             <form class="login-form" id="login-form" action="{{ url_for('login') }}" method="POST">
@@ -42,26 +303,26 @@
                         type="email" 
                         id="email" 
                         name="email"
-                        placeholder="Enter yout email" 
+                        placeholder="Masukkan email Anda" 
                         required
                     >
                 </div>
                 <div class="form-group password-group">
-                    <label for="password">Password</label>
+                    <label for="password">Kata Sandi</label>
                     <input 
                         type="password" 
                         id="password" 
                         name="password"
-                        placeholder="Enter your password" 
+                        placeholder="Masukkan kata sandi Anda" 
                         required
                     >
                     <span class="password-toggle">👁️</span>
                 </div>
                 <div class="form-actions">
-                    <button type="submit" id="loginSubmitBtn" class="btn btn-primary">Login</button>
+                    <button type="submit" id="loginSubmitBtn" class="btn btn-primary">Masuk</button>
                     <p class="register-link">
-                        Don't have an account? 
-                        <a href="/register" class="text-primary">Register here</a>
+                        Belum punya akun? 
+                        <a href="/register" class="text-primary">Daftar di sini</a>
                     </p>
                 </div>
             </form>
@@ -71,24 +332,25 @@
     <section class="features">
         <div class="container">
             <div class="section-header">
-                <h2>Why Choose HeartLink</h2>
-                <p>Discover what makes us the preferred choice for meaningful connections</p>
+                <h2>Mengapa HeartLink?</h2>
+                <p>Temukan apa yang membuat kami menjadi pilihan utama untuk mencari pasangan terbaikmu</p>
             </div>
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">💝</div>
-                    <h3>Smart Matching</h3>
-                    <p>Our AI-powered algorithm ensures compatible matches based on your preferences and personality</p>
+                    <h3>Sistem Cerdas</h3>
+                    <p>Perjodohan bertenaga AI memastikan kecocokan yang kompatibel berdasarkan preferensi Anda</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">🔒</div>
-                    <h3>Safe &amp; Secure</h3>
-                    <p>Your privacy and security are our top priority with advanced encryption and verification</p>
+                    <h3>Ekstra Aman</h3>
+                    <p>Didukung dengan teknologi verifikasi yang handal dan sistem keamanan terpercaya</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">💫</div>
-                    <h3>Quality Profiles</h3>
-                    <p>Connect with verified users who are serious about finding meaningful relationships</p>
+                    <h3>Profil Beragam</h3>
+                    <p>Terhubung dengan pengguna dari berbagai latar, kepribadian, dan preferensi</p>
+
                 </div>
             </div>
         </div>
@@ -98,16 +360,16 @@
         <div class="container">
             <div class="stats-grid">
                 <div class="stat-item">
-                    <h3>2M+</h3>
-                    <p>Active Users</p>
+                    <h3>50+</h3>
+                    <p>Pengguna Aktif</p>
                 </div>
                 <div class="stat-item">
-                    <h3>500K</h3>
-                    <p>Successful Matches</p>
+                    <h3>200+</h3>
+                    <p>Rekomendasi Pasangan</p>
                 </div>
                 <div class="stat-item">
-                    <h3>98%</h3>
-                    <p>User Satisfaction</p>
+                    <h3>90%</h3>
+                    <p>Kepuasan Pengguna</p>
                 </div>
             </div>
         </div>
@@ -115,11 +377,47 @@
 
     <section class="cta">
         <div class="container">
-            <h2>Ready to Find Your Perfect Match?</h2>
-            <p>Join HeartLink today and start your journey to meaningful connections</p>
-            <a href="#" id="ctaGetStartedBtn" class="btn btn-primary">Get Started Now</a>
+            <h2>Siap Menemukan Pasangan Impianmu?</h2>
+            <p>Bergabunglah dengan HeartLink hari ini dan mulai perjalanan menuju koneksi yang bermakna</p>
+            <a href="#" id="ctaGetStartedBtn" class="btn btn-primary">Mulai Perjalanan Cinta</a>
         </div>
     </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <div class="company-details">
+                        <div class="company-detail-item">
+                            <div class="detail-icon">🏢</div>
+                            <div class="detail-content">
+                                <h4>Lokasi Kami</h4>
+                                <p>Universitas Airlangga</p>
+                                <p>Jl. IR Soekarno, Mulyorejo, Surabaya</p>
+                            </div>
+                        </div>
+                        <div class="company-detail-item">
+                            <div class="detail-content">
+                                <a href="https://maps.app.goo.gl/TGPSHPhVVBvbKKPK6" target="_blank" class="btn btn-feedback">
+                                    Buka Google Maps
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-feedback">
+                    <h4>Berikan Feedback Anda</h4>
+                    <p>Pendapat Anda sangat berharga untuk pengembangan HeartLink</p>
+                    <a href="https://forms.gle/zU1ZuVsQV25v2hVv9" target="_blank" class="btn btn-feedback">
+                        📝 Kirim Review & Feedback
+                    </a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 HeartLink Ltd. Semua hak cipta dilindungi.</p>
+            </div>
+        </div>
+    </footer>
 
     <!-- JavaScript disabled for form submission - using standard HTML form -->
     <!-- <script src="/static/js/main.js"></script> -->
