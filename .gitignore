@@ -25,7 +25,8 @@ wheels/
 venv/
 env/
 ENV/
-congig.py
+config.py
+/migrations
 
 # IDE
 .idea/

@@ -9,9 +9,436 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Favicon -->
+     
     <link rel="icon" type="image/png" href="/static/img/favicon.png">
-
-    <link rel="stylesheet" href="/static/css/custom/match_feed.css">
+  
+    <style>
+        /* Variables */
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #FF6B6B;
+            --text-color: #2c3e50;
+            --text-light: #7f8c8d;
+            --bg-color: #f8f9fa;
+            --card-bg: white;
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-accent: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            --border-radius: 15px;
+        }
+        
+        /* Animated Background */
+        .bg-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .shape {
+            position: absolute;
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-radius: 50%;
+            filter: blur(50px);
+            animation: float 15s infinite ease-in-out;
+        }
+        
+        .shape:nth-child(1) {
+            width: 400px;
+            height: 400px;
+            top: -100px;
+            right: -100px;
+            animation-delay: 0s;
+        }
+        
+        .shape:nth-child(2) {
+            width: 300px;
+            height: 300px;
+            bottom: -50px;
+            left: -50px;
+            animation-delay: 3s;
+        }
+        
+        .shape:nth-child(3) {
+            width: 250px;
+            height: 250px;
+            bottom: 50%;
+            right: 30%;
+            animation-delay: 6s;
+        }
+        
+        .shape:nth-child(4) {
+            width: 350px;
+            height: 350px;
+            top: 40%;
+            left: 25%;
+            animation-delay: 9s;
+        }
+        
+        @keyframes float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(20px, 20px) rotate(5deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        
+        /* Header and Main Container */
+        .header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem 0;
+            margin-bottom: 1rem;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .main-container {
+            padding: 2rem 0;
+        }
+        
+        /* Page Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-header .card-title-match {
+            color: rgba(0, 0, 0, 0.703);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            font-size: 2.2rem;
+        }
+        
+        .card-subtitle-match {
+            color: rgba(0, 0, 0, 0.703);
+            font-size: 1.1rem;
+        }
+        
+        .match-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .match-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s;
+        }
+        
+        .match-card:hover::before {
+            left: 100%;
+        }
+        
+        .match-card:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .profile-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid rgba(255, 255, 255, 0.8);
+            background: var(--gradient-accent);
+            padding: 2px;
+            transition: all 0.3s ease;
+            margin: 0 auto 1rem;
+            position: relative;
+        }
+        
+        .profile-photo:hover {
+            transform: scale(1.1);
+        }
+        
+        .profile-photo img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .similarity-badge {
+            background: var(--gradient-accent);
+            color: white;
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            margin-top: 0.5rem;
+        }
+        
+        .match-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 0.8rem;
+            text-align: center;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.6rem;
+            margin: 1.2rem 0;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-item:hover {
+            background: rgba(255, 107, 107, 0.15);
+            transform: translateX(3px);
+        }
+        
+        .info-item i {
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gradient-accent);
+            color: white;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        .bio-section {
+            background: rgba(78, 205, 196, 0.1);
+            border-left: 3px solid #4ECDC4;
+            padding: 0.75rem;
+            border-radius: 12px;
+            margin: 0.75rem 0;
+            font-style: italic;
+            color: var(--text-color);
+            font-size: 0.85rem;
+            flex-grow: 1;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: auto;
+            padding-top: 1rem;
+            justify-content: center;
+        }
+        
+        .btn-profile {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            width: 100%;
+            max-width: 200px;
+            margin: 0 auto;
+        }
+        
+        .btn-profile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            color: white;
+            text-decoration: none;
+        }
+        
+        /* Responsive Styles */
+        .match-row {
+            margin-left: -10px;
+            margin-right: -10px;
+        }
+        
+        .match-col {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+        
+        @media (max-width: 991.98px) {
+            .match-col {
+                margin-bottom: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 767.98px) {
+            .match-col {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+            
+            .page-header .card-title-match {
+                font-size: 1.8rem;
+            }
+            
+            .card-subtitle-match {
+                font-size: 1rem;
+            }
+            
+            .profile-photo {
+                width: 100px;
+                height: 100px;
+            }
+        }
+        
+        @media (max-width: 575.98px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-bar .stat-number {
+                font-size: 1.5rem;
+            }
+            
+            .stats-bar .stat-label {
+                font-size: 0.8rem;
+            }
+        }
+        
+        .no-matches {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .no-matches-icon {
+            font-size: 5rem;
+            color: #bdc3c7;
+            margin-bottom: 2rem;
+        }
+        
+        .stats-bar {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: fadeIn 0.5s ease-out forwards;
+            animation-delay: 0.2s;
+            opacity: 0;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .stat-label {
+            color: var(--text-light);
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .no-matches {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 2.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        .no-matches-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            animation: pulse 2s infinite;
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* Responsive styles */
+        @media (max-width: 767px) {
+            .match-row {
+                margin-bottom: 1rem;
+            }
+            
+            .match-col {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
 
 </head>
 <body>
@@ -35,8 +462,10 @@
         <div class="container">
             <!-- Page Header -->
             <div class="page-header">
-                <h1 class="page-title">💕 Your Perfect Matches</h1>
-                <p class="page-subtitle">Discover amazing people who share your personality and interests</p>
+
+                <h1 class="card-title-match">💕 Temukan Pasangan Serasimu</h1>
+                <p class="card-subtitle-match">Mulai perjalananmu bersama seseorang yang cocok dan siap membangun cerita bersama.</p>
+
             </div>
 
             <!-- Stats Bar -->
@@ -298,12 +727,37 @@
                             </div>
                         </div>
                         {% endfor %}
-                    {% else %}
-                        <div class="alert alert-info text-center">
-                            <h4><i class="fas fa-info-circle"></i> Belum Ada Kecocokan</h4>
-                            <p>Anda belum memiliki kecocokan. Silakan lengkapi profil dan preferensi Anda untuk mendapatkan rekomendasi pasangan.</p>
-                        </div>
-                    {% endif %}
+                  {% else %}
+                      <div class="no-matches">
+                          <div class="no-matches-icon">
+                              <i class="fas fa-heart-broken"></i>
+                          </div>
+                          <h3 style="color: #2c3e50; margin-bottom: 1rem;">Belum Ada Kecocokan</h3>
+                          <p style="color: #7f8c8d; margin-bottom: 2rem; font-size: 1.1rem;">Jangan khawatir! Lengkapi profil dan tes Anda untuk menemukan orang-orang yang memiliki kesamaan minat dengan Anda.</p>
+
+                          <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                              <a href="{{ url_for('profile_setup') }}" class="btn-profile">
+                                  <i class="fas fa-user-edit"></i> Lengkapi Profil
+                              </a>
+                              <a href="{{ url_for('preferences_text') }}" class="btn-profile">
+                                  <i class="fas fa-brain"></i> Ambil Tes Kepribadian
+                              </a>
+                              <a href="{{ url_for('image_test') }}" class="btn-profile">
+                                  <i class="fas fa-images"></i> Tes Preferensi Visual
+                              </a>
+                          </div>
+
+                          <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(102, 126, 234, 0.1); border-radius: 15px;">
+                              <h5 style="color: #667eea; margin-bottom: 1rem;"><i class="fas fa-lightbulb"></i> Tips untuk Mendapatkan Kecocokan yang Lebih Baik:</h5>
+                              <ul style="text-align: left; color: #2c3e50; list-style: none; padding: 0;">
+                                  <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #4CAF50; margin-right: 0.5rem;"></i> Unggah foto profil yang jelas</li>
+                                  <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #4CAF50; margin-right: 0.5rem;"></i> Tulis bio yang menarik</li>
+                                  <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #4CAF50; margin-right: 0.5rem;"></i> Lengkapi semua pertanyaan kepribadian</li>
+                                  <li style="margin-bottom: 0.5rem;"><i class="fas fa-check" style="color: #4CAF50; margin-right: 0.5rem;"></i> Atur preferensi visual Anda</li>
+                              </ul>
+                          </div>
+                      </div>
+                  {% endif %}
                 </div>
             </div>
         </div>
