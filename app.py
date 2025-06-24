@@ -15,6 +15,10 @@ import pickle
 import joblib 
 from PIL import Image
 from functools import wraps
+from ml_service import initialize_model_service, get_model_service
+import logging
+from ml_service import initialize_model_service
+initialize_model_service('models')
 
 # Create Flask app
 app = Flask(__name__)
@@ -22,6 +26,14 @@ app = Flask(__name__)
 # Load configuration
 config_name = os.environ.get('FLASK_CONFIG') or 'default'
 app.config.from_object(config[config_name])
+
+print("Initializing ML Model Service...")
+if not initialize_model_service('models'):  # 'models' is your model directory
+    print("Warning: ML Model Service failed to initialize. Clustering features may not work.")
+    logging.warning("ML Model Service initialization failed")
+else:
+    print("ML Model Service initialized successfully!")
+
 
 # Initialize extensions
 db.init_app(app)
@@ -262,7 +274,15 @@ def profile_setup():
                 
                 # Automatic clustering for profile photo
                 if profile.gender and file and file.filename:
-                    cluster_id = predict_user_cluster(photo_path, profile.gender)
+                    cluster_result = get_model_service().get_cluster_assignment_and_distance(photo_path, profile.gender)
+                    if cluster_result:
+                        cluster_id, distance = cluster_result
+                        profile.cluster_id = cluster_id
+                        profile.cluster_distance = distance  # ⬅️ Save it here
+                        print(f"User {user_id} assigned to cluster {cluster_id} with distance {distance:.3f}")
+                    else:
+                        print(f"Failed to predict cluster and distance for user {user_id}")
+
                     if cluster_id is not None:
                         profile.cluster_id = cluster_id
                         print(f"User {user_id} assigned to cluster {cluster_id}")
@@ -433,7 +453,7 @@ def match_feed():
             profile_data = match_user.profile.to_dict()
             profile_data['total_score'] = round(match_data['total_score'] * 100, 1)
             profile_data['text_similarity'] = round(match_data['text_similarity'] * 100, 1)
-            profile_data['cluster_similarity'] = round(match_data['cluster_similarity'] * 100, 1)
+            profile_data['cluster_distance'] = round(match_data['cluster_distance'] * 100, 1)
             match_profiles.append(profile_data)
     
     # Add current datetime for age calculation in template
@@ -469,26 +489,28 @@ def get_profile_api(user_id):
 # Function to predict cluster for user photo
 def predict_user_cluster(image_path, gender):
     """
-    Predict cluster ID for user's profile photo
+    Predict cluster ID using the ML service
     """
     try:
-        # Load appropriate model based on gender
-        model_filename = f'model_{gender.lower()}.pkl'
-        model_path = os.path.join('static', 'models', model_filename)        
-        if not os.path.exists(model_path):
-            print(f"Model file not found: {model_path}")
+        service = get_model_service()
+        if service is None:
+            logging.error("ML service not available")
             return None
         
-        # Load clustering model using joblib instead of pickle
-        clustering_model = joblib.load(model_path)
+        cluster_id,distance = service.predict_cluster(image_path, gender)
         
-        # Predict cluster directly from the image path
-        # Image sudah masuk ke pkl, tidak perlu preprocessing
-        cluster_id = clustering_model.predict([image_path])[0]
-        return int(cluster_id)
-    
+        if cluster_id is not None:
+            logging.info(f"Predicted cluster {cluster_id} for {gender} user")
+            
+            # Optionally get confidence scores
+            prob_info = service.get_cluster_probabilities(image_path, gender)
+            if prob_info:
+                logging.info(f"Prediction confidence: {prob_info['confidence']:.3f}")
+        
+        return cluster_id, distance
+        
     except Exception as e:
-        print(f"Error predicting cluster: {e}")
+        logging.error(f"Error in predict_user_cluster: {e}")
         return None
 
 @app.route('/preferences-text', methods=['GET', 'POST'])
@@ -628,7 +650,7 @@ def comprehensive_matches():
                 profile_data = user.profile.to_dict()
                 profile_data['total_score'] = round(match_data['total_score'] * 100, 1)
                 profile_data['text_similarity'] = round(match_data['text_similarity'] * 100, 1)
-                profile_data['cluster_similarity'] = round(match_data['cluster_similarity'] * 100, 1)
+                profile_data['cluster_distance'] = round(match_data['cluster_distance'] * 100, 1)
                 match_profiles.append(profile_data)
         
         return jsonify({
