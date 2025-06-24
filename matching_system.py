@@ -11,7 +11,7 @@ def get_final_matches(user_id):
         user_image_test = UserImageTest.query.filter_by(user_id=user_id).first()
 
         if not user_profile or not user_prefs_subset or not user_prefs_similarity:
-            print(f"Missing data for user {user_id}")
+            print(f"[MATCHING] Missing data for user {user_id}")
             return []
 
         user_gender = user_profile.gender.lower() if user_profile.gender else None
@@ -23,22 +23,41 @@ def get_final_matches(user_id):
 
         candidates = []
         for candidate in candidates_query.all():
+            reason = None
+
+            # Age filter
             if candidate.date_of_birth:
                 age = candidate.age
                 if user_prefs_subset.preferred_age_min and age < user_prefs_subset.preferred_age_min:
-                    continue
+                    reason = f"Too young: {age}"
                 if user_prefs_subset.preferred_age_max and age > user_prefs_subset.preferred_age_max:
-                    continue
+                    reason = f"Too old: {age}"
             else:
                 continue
+                reason = "No birthdate"
 
-            if user_prefs_subset.same_location_only and candidate.location != user_profile.location:
-                continue
+            # Location filter
+            if not reason and user_prefs_subset.same_location_only and candidate.location != user_profile.location:
+                reason = f"Different location: {candidate.location}"
 
-            if user_prefs_subset.serious_only and candidate.relationship_goal != 'serious':
-                continue
+            # Relationship goal
+            if not reason and user_prefs_subset.serious_only and candidate.relationship_goal != 'serious':
+                reason = f"Relationship goal mismatch: {candidate.relationship_goal}"
 
-            if user_prefs_subset.prefer_same_religion and candidate.religion != user_profile.religion:
+            # Religion
+            if not reason and user_prefs_subset.prefer_same_religion and candidate.religion != user_profile.religion:
+                reason = f"Different religion: {candidate.religion}"
+
+            # Cluster preference filter
+            if not reason and user_image_test:
+                preferred_clusters = set(map(int, user_image_test.get_preferred_cluster_ids()))
+                if candidate.cluster_id is None:
+                    reason = "Candidate has no cluster_id"
+                elif candidate.cluster_id not in preferred_clusters:
+                    reason = f"Cluster {candidate.cluster_id} not in preferred {preferred_clusters}"
+
+            if reason:
+                print(f"[SKIP] Candidate {candidate.user_id} - {reason}")
                 continue
 
             if user_image_test and candidate.cluster_id is not None:
@@ -51,7 +70,7 @@ def get_final_matches(user_id):
             candidates.append(candidate)
 
         if not candidates:
-            print(f"No candidates match all filters for user {user_id}")
+            print(f"[MATCHING] No candidates match all filters for user {user_id}")
             return []
 
         user_vector = np.array(user_prefs_similarity.get_similarity_vector()).reshape(1, -1)
@@ -60,23 +79,32 @@ def get_final_matches(user_id):
         for candidate in candidates:
             candidate_prefs = UserPreferencesSimilarity.query.filter_by(user_id=candidate.user_id).first()
             if not candidate_prefs:
+                print(f"[SKIP] Candidate {candidate.user_id} has no preferences similarity vector.")
                 continue
 
             candidate_vector = np.array(candidate_prefs.get_similarity_vector()).reshape(1, -1)
             similarity = float(cosine_similarity(user_vector, candidate_vector)[0][0])
 
+            # Cluster distance score: inverse of distance, higher = better
+            raw_distance = candidate.cluster_distance if candidate.cluster_distance is not None else 0
+            cluster_distance = 1.0 - min(raw_distance / 10.0, 1.0)  # Normalize distance into similarity-like score (0 to 1)
+
+            final_score = ((similarity * 50) + (cluster_distance * 50))/100
+
             results.append({
                 'user_id': candidate.user_id,
-                'total_score': similarity,
+                'total_score': final_score,
                 'text_similarity': similarity,
-                'cluster_similarity': 1.0 
+                'cluster_distance': cluster_distance
             })
 
         results.sort(key=lambda x: x['total_score'], reverse=True)
+        print(f"[MATCHING] Returning top {len(results)} matches for user {user_id}")
         return results
+  
 
     except Exception as e:
         import traceback
-        print(f"Error in get_final_matches: {e}")
+        print(f"[ERROR] Error in get_final_matches: {e}")
         print(traceback.format_exc())
         return []

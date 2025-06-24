@@ -85,6 +85,7 @@ class UserProfile(db.Model):
     alcohol = db.Column(db.Boolean)  # Kebiasaan alkohol
     relationship_goal = db.Column(db.String(20))  # 'casual' atau 'serious'
     cluster_id = db.Column(db.Integer)
+    cluster_distance = db.Column(db.Float) 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
