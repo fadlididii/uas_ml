@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Success response
                     if (submitBtn) {
                         submitBtn.classList.remove('loading');
-                        submitBtn.textContent = 'Create Account';
+                        submitBtn.textContent = 'Buat Akun';
                         submitBtn.disabled = false;
                     }
                     
@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Error handling
                     if (submitBtn) {
                         submitBtn.classList.remove('loading');
-                        submitBtn.textContent = 'Create Account';
+                        submitBtn.textContent = 'Buat Akun';
                         submitBtn.disabled = false;
                     }
                     
@@ -353,7 +353,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Get Started button in navbar (without ID)
     const navGetStartedBtns = document.querySelectorAll('.nav-links .btn-primary');
     navGetStartedBtns.forEach(btn => {
-        if (btn.textContent.trim() === 'Get Started') {
+        if (btn.textContent.trim() === 'Mulai') {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
                 showLoginModal();
@@ -436,3 +436,32 @@ document.addEventListener('DOMContentLoaded', function() {
     window.showLoginModal = showLoginModal;
     window.hideLoginModal = hideLoginModal;
 });
+
+
+// Mobile menu functionality
+const hamburgerMenu = document.getElementById('hamburgerMenu');
+const navLinks = document.getElementById('navLinks');
+
+if (hamburgerMenu && navLinks) {
+    hamburgerMenu.addEventListener('click', function() {
+        hamburgerMenu.classList.toggle('active');
+        navLinks.classList.toggle('active');
+    });
+    
+    // Close menu when clicking on a link
+    const navLinksItems = navLinks.querySelectorAll('a');
+    navLinksItems.forEach(link => {
+        link.addEventListener('click', function() {
+            hamburgerMenu.classList.remove('active');
+            navLinks.classList.remove('active');
+        });
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!navLinks.contains(event.target) && !hamburgerMenu.contains(event.target) && navLinks.classList.contains('active')) {
+            hamburgerMenu.classList.remove('active');
+            navLinks.classList.remove('active');
+        }
+    });
+}

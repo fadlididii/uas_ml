@@ -248,7 +248,15 @@ def profile_setup():
             profile.religion = data.get('religion')
             profile.hobbies = data.get('hobbies')
             profile.language_used = data.get('language_used')
-            profile.whatsapp = data.get('whatsapp')
+            # Di bagian profile_setup route, sebelum menyimpan data
+            if data.get('whatsapp'):
+                whatsapp = data.get('whatsapp')
+                if not whatsapp.startswith('62'):
+                    flash('Nomor WhatsApp harus diawali dengan 62 (tanpa tanda + atau 0)', 'error')
+                    return redirect(url_for('profile_setup'))
+                profile.whatsapp = whatsapp
+            else:
+                profile.whatsapp = None
             profile.instagram = data.get('instagram')
             profile.smoking = data.get('smoking') == 'yes' if data.get('smoking') else None
             profile.alcohol = data.get('alcohol') == 'yes' if data.get('alcohol') else None
@@ -467,7 +475,7 @@ def match_feed():
             profile_data = match_user.profile.to_dict()
             profile_data['total_score'] = round(match_data['total_score'] * 100, 1)
             profile_data['text_similarity'] = round(match_data['text_similarity'] * 100, 1)
-            profile_data['cluster_similarity'] = round(match_data['cluster_similarity'] * 100, 1)
+            profile_data['cluster_distance'] = round(match_data['cluster_distance'] * 100, 1)
             
             # Format date of birth for display
             if profile_data.get('date_of_birth'):

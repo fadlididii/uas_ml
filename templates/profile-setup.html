@@ -671,7 +671,7 @@
                     
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="education" class="form-label">Tingkat Pendidikan</label>
+                            <label for="education" class="form-label">Pendidikan Terakhir</label>
                             <select id="education" name="education" class="form-control">
                                 <option value="">Pilih pendidikan</option>
                                 <option value="SMA" {{ 'selected' if profile_data and profile_data.education == 'SMA' else '' }}>SMA/SMK</option>
@@ -693,7 +693,12 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="whatsapp" class="form-label">WhatsApp</label>
-                            <input type="text" id="whatsapp" name="whatsapp" class="form-control" placeholder="Nomor WhatsApp" value="{{ profile_data.whatsapp if profile_data else '' }}">
+                            <input type="text" id="whatsapp" name="whatsapp" class="form-control" 
+                                   placeholder="Nomor WhatsApp (diawali dengan 62)" 
+                                   pattern="^62\d+" 
+                                   title="Nomor WhatsApp harus diawali dengan 62 (tanpa tanda + atau 0)" 
+                                   value="{{ profile_data.whatsapp if profile_data else '' }}">
+                            <small class="form-text text-muted">Contoh: 628123456789</small>
                         </div>
                     </div>
                     
@@ -936,10 +941,13 @@
             const whatsapp = document.getElementById('whatsapp').value;
             const previewContact = document.getElementById('previewContact');
             if (whatsapp) {
+                // Validasi format nomor WhatsApp
+                const formattedWhatsapp = whatsapp.startsWith('62') ? whatsapp : `62${whatsapp.replace(/^0+/, '')}`;
+                
                 previewContact.style.display = 'flex';
                 const link = previewContact.querySelector('a');
-                link.href = `https://wa.me/${whatsapp.replace(/[^0-9]/g, '')}`;
-                link.querySelector('span').textContent = whatsapp;
+                link.href = `https://wa.me/${formattedWhatsapp.replace(/[^0-9]/g, '')}`;
+                link.querySelector('span').textContent = formattedWhatsapp;
             } else {
                 previewContact.style.display = 'none';
             }
@@ -1017,6 +1025,15 @@
                     const provinsi = document.getElementById('provinsi');
                     const kabupaten = document.getElementById('kabupaten');
                     const location = document.getElementById('location');
+                    const whatsapp = document.getElementById('whatsapp');
+                    
+                    // Validasi nomor WhatsApp harus diawali dengan 62
+                    if (whatsapp.value && !whatsapp.value.startsWith('62')) {
+                        e.preventDefault();
+                        showMessage('Nomor WhatsApp harus diawali dengan 62 (tanpa tanda + atau 0)', 'error');
+                        whatsapp.focus();
+                        return false;
+                    }
                     
                     if (!provinsi.value || !kabupaten.value) {
                         e.preventDefault();
