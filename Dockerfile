@@ -1,16 +1,31 @@
-FROM python:3.10
+# ---- Base Image ----
+FROM python:3.11-slim
 
-# Run in unbuffered mode
-ENV PYTHONUNBUFFERED=1 
-
-# Create and change to the app directory.
+# ---- Set Work Directory ----
 WORKDIR /app
 
-# Copy local code to the container image.
-COPY . ./
+# ---- Install System Dependencies ----
+# Only what is needed for runtime + opencv-headless
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    g++ \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    libgtk-3-dev \
+    cmake \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install project dependencies
-RUN pip install --default-timeout=300 --no-cache-dir -r requirements.txt
+# ---- Install Python Dependencies ----
+# Use --no-cache-dir and avoid COPYing models into image
+COPY requirements.txt .
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Run the web service on container startup.
+# ---- Copy App Code (excluding large models) ----
+COPY . .
+
+# ---- Set Environment Variables ----
+ENV PYTHONUNBUFFERED=1
+
+# ---- Default Command (adjust if needed) ----
 CMD ["python", "app.py"]
