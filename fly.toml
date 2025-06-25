@@ -1,0 +1,26 @@
+# fly.toml app configuration file generated for uas-2-frosty-violet-8358 on 2025-06-26T01:17:31+07:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'uas-2-frosty-violet-8358'
+primary_region = 'sin'
+
+[build]
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  memory = '32gb'
+  cpu_kind = 'performance'
+  cpus = 4
+
+[[mounts]]
+  source = "model_volume"
+  destination = "/models"
