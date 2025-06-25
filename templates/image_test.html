@@ -305,7 +305,8 @@
                 <div class="question-section active">
                     <div class="question-group">
                         <h3 class="question-title">Pilih Preferensi Visual Anda</h3>
-                        <p class="question-subtitle">Pilih gaya visual yang menarik bagi Anda. Anda dapat memilih lebih dari satu untuk mendapatkan hasil yang lebih akurat.</p>
+                        <p class="question-subtitle">Pilih wajah yang menurut Anda menarik. Pilih satu atau beberapa yang paling sesuai dengan preferensi Anda.</p>
+
                         
                         <div class="image-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin: 2rem 0;">
                             {% for i in range(10) %}
@@ -320,7 +321,7 @@
                                     alt="Gaya Visual {{ i + 1 }}"
                                     onerror="this.src='{{ url_for('static', filename='img/avatar1.png') }}'; this.style.filter='grayscale(100%)';">
                                 <div class="image-label">
-                                    <strong>Gaya {{ i + 1 }}</strong>
+                                    <strong>Pilihan {{ i + 1 }}</strong>
                                 </div>
                             </div>
                             {% endfor %}
@@ -434,7 +435,13 @@
                 console.log('Form action:', form.action);
                 console.log('Redirect value:', redirectInput.value);
                 
-                form.submit();
+                // Show success message before submitting
+                showSuccessMessage();
+                
+                // Submit form after a short delay to allow the notification to be seen
+                setTimeout(() => {
+                    form.submit();
+                }, 1000);
             });
 
             checkboxes.forEach((checkbox, index) => {
@@ -479,6 +486,43 @@
                 }
             });
         });
+        
+        function showSuccessMessage() { 
+            // Create success notification 
+            const notification = document.createElement('div'); 
+            notification.style.cssText = ` 
+                position: fixed; 
+                top: 20px; 
+                right: 20px; 
+                background: linear-gradient(135deg, #28a745, #20c997); 
+                color: white; 
+                padding: 15px 25px; 
+                border-radius: 10px; 
+                box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3); 
+                z-index: 9999; 
+                font-weight: 500; 
+                animation: slideIn 0.3s ease; 
+            `; 
+            notification.innerHTML = '✅ Preferensi berhasil disimpan!'; 
+            
+            // Add slide animation 
+            const style = document.createElement('style'); 
+            style.textContent = ` 
+                @keyframes slideIn { 
+                    from { transform: translateX(100%); opacity: 0; } 
+                    to { transform: translateX(0); opacity: 1; } 
+                } 
+            `; 
+            document.head.appendChild(style); 
+            
+            document.body.appendChild(notification); 
+            
+            // Remove notification after 3 seconds 
+            setTimeout(() => { 
+                notification.remove(); 
+                style.remove(); 
+            }, 3000); 
+        }
     </script>
 </body>
 </html>

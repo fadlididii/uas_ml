@@ -199,6 +199,61 @@
             border-color: #FF6B6B;
             box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.25);
         }
+        
+        /* Validation styles */
+        .invalid-feedback {
+            display: none;
+            width: 100%;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: #dc3545;
+            font-weight: 500;
+            background-color: rgba(220, 53, 69, 0.1);
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            border-left: 3px solid #dc3545;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .was-validated .form-control:invalid,
+        .form-control.is-invalid,
+        .was-validated .form-select:invalid,
+        .form-select.is-invalid {
+            border-color: #dc3545;
+            padding-right: calc(1.5em + 0.75rem);
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+        
+        .was-validated .form-control:invalid:focus,
+        .form-control.is-invalid:focus,
+        .was-validated .form-select:invalid:focus,
+        .form-select.is-invalid:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+        }
+        
+        /* Radio and checkbox validation */
+        .radio-group.is-invalid {
+            border-left: 3px solid #dc3545;
+            padding-left: 10px;
+            background-color: rgba(220, 53, 69, 0.05);
+            border-radius: 0.375rem;
+        }
+        
+        /* Make error messages more visible */
+        .invalid-feedback.d-block,
+        .invalid-feedback[style*="display: block"] {
+            display: block !important;
+            margin-bottom: 10px;
+        }
 
         .radio-group {
             display: flex;
@@ -616,7 +671,7 @@
                     
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="education" class="form-label">Tingkat Pendidikan</label>
+                            <label for="education" class="form-label">Pendidikan Terakhir</label>
                             <select id="education" name="education" class="form-control">
                                 <option value="">Pilih pendidikan</option>
                                 <option value="SMA" {{ 'selected' if profile_data and profile_data.education == 'SMA' else '' }}>SMA/SMK</option>
@@ -638,7 +693,12 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="whatsapp" class="form-label">WhatsApp</label>
-                            <input type="text" id="whatsapp" name="whatsapp" class="form-control" placeholder="Nomor WhatsApp" value="{{ profile_data.whatsapp if profile_data else '' }}">
+                            <input type="text" id="whatsapp" name="whatsapp" class="form-control" 
+                                   placeholder="Nomor WhatsApp (diawali dengan 62)" 
+                                   pattern="^62\d+" 
+                                   title="Nomor WhatsApp harus diawali dengan 62 (tanpa tanda + atau 0)" 
+                                   value="{{ profile_data.whatsapp if profile_data else '' }}">
+                            <small class="form-text text-muted">Contoh: 628123456789</small>
                         </div>
                     </div>
                     
@@ -764,6 +824,8 @@
     
     <!-- Profile Prefill Handler -->
     <script src="{{ url_for('static', filename='js/profile-prefill.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='js/profile-setup.js') }}"></script>
     
     <script>
         // Range input handler
@@ -879,10 +941,13 @@
             const whatsapp = document.getElementById('whatsapp').value;
             const previewContact = document.getElementById('previewContact');
             if (whatsapp) {
+                // Validasi format nomor WhatsApp
+                const formattedWhatsapp = whatsapp.startsWith('62') ? whatsapp : `62${whatsapp.replace(/^0+/, '')}`;
+                
                 previewContact.style.display = 'flex';
                 const link = previewContact.querySelector('a');
-                link.href = `https://wa.me/${whatsapp.replace(/[^0-9]/g, '')}`;
-                link.querySelector('span').textContent = whatsapp;
+                link.href = `https://wa.me/${formattedWhatsapp.replace(/[^0-9]/g, '')}`;
+                link.querySelector('span').textContent = formattedWhatsapp;
             } else {
                 previewContact.style.display = 'none';
             }
@@ -960,6 +1025,15 @@
                     const provinsi = document.getElementById('provinsi');
                     const kabupaten = document.getElementById('kabupaten');
                     const location = document.getElementById('location');
+                    const whatsapp = document.getElementById('whatsapp');
+                    
+                    // Validasi nomor WhatsApp harus diawali dengan 62
+                    if (whatsapp.value && !whatsapp.value.startsWith('62')) {
+                        e.preventDefault();
+                        showMessage('Nomor WhatsApp harus diawali dengan 62 (tanpa tanda + atau 0)', 'error');
+                        whatsapp.focus();
+                        return false;
+                    }
                     
                     if (!provinsi.value || !kabupaten.value) {
                         e.preventDefault();

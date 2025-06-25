@@ -508,142 +508,396 @@
         .university-info p {
             margin-bottom: 3px;
         }
+        /* Process Flow Section */
+.process-flow {
+    padding: 100px 0;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    position: relative;
+    overflow: hidden;
+}
 
-        /* Enhanced Footer */
-        .footer {
-            background: linear-gradient(135deg, var(--dark) 0%, #1a1f24 100%);
-            color: white;
-            padding: 100px 0 50px;
-            position: relative;
-            overflow: hidden;
-        }
+.flow-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 800px;
+    margin: 60px auto 0;
+    position: relative;
+}
 
-        .footer::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: var(--gradient);
-        }
+.flow-step {
+    background: white;
+    border-radius: 25px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+    padding: 35px;
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+    margin: 20px 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 1;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
 
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 50px;
-            margin-bottom: 50px;
-            position: relative;
-            z-index: 1;
-        }
+.flow-step:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+    border-color: rgba(255, 107, 107, 0.3);
+}
 
-        .footer-section h3 {
-            font-size: 1.6rem;
-            margin-bottom: 25px;
-            color: white;
-            position: relative;
-        }
+.step-icon {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    transition: transform 0.3s ease;
+}
 
-        .footer-section h3::after {
-            content: '';
-            position: absolute;
-            bottom: -8px;
-            left: 0;
-            width: 30px;
-            height: 3px;
-            background: var(--gradient);
-            border-radius: 2px;
-        }
+.flow-step:hover .step-icon {
+    transform: scale(1.1);
+}
 
-        .footer-section p {
-            opacity: 0.8;
-            margin-bottom: 12px;
-            line-height: 1.6;
-        }
+.flow-step h3 {
+    font-size: 1.6rem;
+    color: var(--dark);
+    margin-bottom: 15px;
+    font-weight: 600;
+}
 
-        .footer-links a {
-            color: white;
-            text-decoration: none;
-            opacity: 0.8;
-            display: block;
-            margin-bottom: 12px;
-            transition: all 0.3s ease;
-            position: relative;
-            padding-left: 15px;
-        }
+.flow-step p {
+    color: #666;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    margin: 0;
+}
 
-        .footer-links a::before {
-            content: '→';
-            position: absolute;
-            left: 0;
-            opacity: 0;
-            transform: translateX(-10px);
-            transition: all 0.3s ease;
-        }
+.flow-arrow {
+    font-size: 2.5rem;
+    color: var(--primary);
+    margin: 10px 0;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    animation: bounce 1.5s infinite;
+}
 
-        .footer-links a:hover {
-            opacity: 1;
-            color: var(--secondary);
-            padding-left: 25px;
-        }
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
 
-        .footer-links a:hover::before {
-            opacity: 1;
-            transform: translateX(0);
-        }
+.final-step {
+    background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+    color: white;
+    position: relative;
+    overflow: hidden;
+    border: none;
+}
 
-        .footer-bottom {
-            text-align: center;
-            padding-top: 40px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            position: relative;
-        }
+.final-step::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    pointer-events: none;
+}
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2.8rem;
-            }
-            
-            .nav-links {
-                display: none;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
+.final-step h3,
+.final-step p {
+    color: white;
+    position: relative;
+    z-index: 1;
+}
 
-            .team-grid {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 20px;
-            }
+.final-step p {
+    opacity: 0.9;
+}
 
-            .hero {
-                padding: 140px 0 100px;
-            }
-        }
+/* Connector line */
+.flow-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(to bottom, #FF6B6B, #4ECDC4);
+    z-index: 0;
+    border-radius: 2px;
+}
 
-        @media (max-width: 900px) {
-            .team-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 20px;
-            }
-        }
+/* Responsive Design */
+@media (max-width: 768px) {
+    .flow-container {
+        padding: 0 20px;
+    }
+    
+    .flow-step {
+        padding: 25px;
+    }
+    
+    .flow-step h3 {
+        font-size: 1.4rem;
+    }
+    
+    .flow-step p {
+        font-size: 0.95rem;
+    }
+    
+    .flow-arrow {
+        font-size: 2rem;
+    }
+}
 
-        @media (max-width: 480px) {
-            .hero h1 {
-                font-size: 2.2rem;
-            }
+        /* Enhanced Footer Styles - HeartLink */
+.footer {
+    background: linear-gradient(135deg, var(--dark) 0%, #1a1f24 100%);
+    color: white;
+    padding: 60px 0 30px;
+    position: relative;
+    overflow: hidden;
+    margin-top: 50px;
+}
 
-            .section-header h2 {
-                font-size: 2rem;
-            }
+.footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--gradient);
+    animation: gradientShift 3s ease-in-out infinite alternate;
+}
 
-            .team-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-        }
+@keyframes gradientShift {
+    0% { opacity: 0.8; }
+    100% { opacity: 1; }
+}
+
+.footer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60"><defs><pattern id="footerPattern" width="60" height="60" patternUnits="userSpaceOnUse"><circle cx="15" cy="15" r="1" fill="white" opacity="0.03"/><circle cx="45" cy="45" r="1" fill="white" opacity="0.03"/><circle cx="30" cy="5" r="0.5" fill="white" opacity="0.02"/></pattern></defs><rect width="60" height="60" fill="url(%23footerPattern)"/></svg>');
+    pointer-events: none;
+}
+
+.footer-content {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 40px;
+    align-items: stretch;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 30px;
+}
+
+/* Footer Info Section */
+.footer-info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.company-details {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 25px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.company-details:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.company-detail-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.company-detail-item:last-child {
+    margin-bottom: 0;
+}
+
+.detail-icon {
+    font-size: 1.2rem;
+    min-width: 30px;
+    padding-top: 3px;
+}
+
+.detail-content h5 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: white;
+}
+
+.detail-content p {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Footer Feedback Section */
+.footer-feedback {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 25px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.footer-feedback:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(255, 107, 107, 0.25);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.feedback-header h4 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.feedback-header h4::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background: var(--gradient);
+    border-radius: 2px;
+}
+
+.feedback-header p {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.btn-feedback {
+    background: var(--gradient);
+    color: white;
+    padding: 14px 30px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    z-index: 1;
+    margin-top: 15px;
+    width: fit-content;
+}
+
+.btn-feedback:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 15px 35px rgba(255, 107, 107, 0.4);
+}
+
+.btn-feedback:active {
+    transform: translateY(-1px) scale(1.02);
+}
+
+/* Footer Bottom */
+.footer-bottom {
+    text-align: center;
+    padding-top: 30px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    position: relative;
+    z-index: 1;
+}
+
+.footer-bottom::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 2px;
+    background: var(--gradient);
+}
+
+.footer-bottom p {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.95rem;
+    font-weight: 400;
+    margin: 0;
+    position: relative;
+}
+
+/* Responsive Design */
+@media (max-width: 900px) {
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .company-details, 
+    .footer-feedback {
+        padding: 20px;
+    }
+    
+    .btn-feedback {
+        padding: 12px 25px;
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .footer {
+        padding: 40px 0 20px;
+    }
+    
+    .company-detail-item {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .feedback-header h4 {
+        font-size: 1.25rem;
+    }
+    
+    .btn-feedback {
+        width: 100%;
+        text-align: center;
+    }
+}
 
         /* Animation delays for staggered effects */
         .feature-card:nth-child(1) { animation-delay: 0.1s; }
@@ -666,9 +920,9 @@
         <div class="container nav-content">
                         <div class="logo"><a href="/" class="logo-link">HeartLink</a></div>
             <div class="nav-links">
-                <a href="/">Home</a>
-                <a href="about">About</a>
-                <a href="#" class="btn btn-primary">Get Started</a>
+                <a href="/">Beranda</a>
+                <a href="about">Tentang</a>
+                <a href="#" class="btn btn-primary">Mulai</a>
             </div>
         </div>
     </nav>
@@ -700,7 +954,7 @@
                         placeholder="Enter your password" 
                         required
                     >
-                    <span class="password-toggle">👁️</span>
+                    <span class="password-toggle">👁</span>
                 </div>
                 <div class="form-actions">
                     <button type="submit" id="loginSubmitBtn" class="btn btn-primary">Login</button>
@@ -715,77 +969,112 @@
 
     <section class="hero">
         <div class="container">
-            <h1>Our Innovation Story</h1>
-            <p>Discover how we're revolutionizing online dating with cutting-edge technology</p>
+            <h1>Cerita Inovasi Kami</h1>
+            <p>Temukan bagaimana kami merevolusi dunia kencan online dengan teknologi canggih</p>
         </div>
     </section>
 
     <section class="features" style="background: #f8f9fa;">
         <div class="container">
             <div class="section-header">
-                <h2>Our Mission</h2>
-                <p>Creating meaningful connections in the digital age</p>
+                <h2>Misi Kami</h2>
+                <p>Menciptakan koneksi bermakna di era digital yang penuh tantangan</p>
             </div>
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">❤️</div>
-                    <h3>Authentic Connections</h3>
-                    <p>We believe technology should enhance human connection, not replace it. Our AI works to bring compatible people together naturally.</p>
+                    <h3>Koneksi Autentik</h3>
+                    <p>HeartLink hadir untuk menciptakan koneksi yang terasa nyata, melalui AI kami bekerja untuk mempertemukan orang-orang yang benar-benar kompatibel secara natural.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">🤝</div>
-                    <h3>Inclusive Dating</h3>
-                    <p>Our algorithms are designed to be inclusive and fair, ensuring everyone has the opportunity to find meaningful connections.</p>
+                    <h3>Kencan Inklusif</h3>
+                    <p>Algoritma kami dirancang secara inklusif, memastikan setiap orang memiliki kesempatan yang sama untuk menemukan koneksi yang bermakna.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">📈</div>
-                    <h3>Continuous Innovation</h3>
-                    <p>We're constantly improving our technology to provide the best possible matching experience for our users.</p>
+                    <h3>Inovasi Berkelanjutan</h3>
+                    <p>Kami terus berinovasi dan mengembangkan teknologi untuk memberikan pengalaman perjodohan terbaik.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="stats">
-        <div class="container">
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <h3>98%</h3>
-                    <p>Match Accuracy</p>
-                </div>
-                <div class="stat-item">
-                    <h3>10M+</h3>
-                    <p>Analyzed Interactions</p>
-                </div>
-                <div class="stat-item">
-                    <h3>24/7</h3>
-                    <p>AI Learning</p>
-                </div>
+    <section class="process-flow">
+    <div class="container">
+        <div class="section-header">
+            <h2>Proses HeartLink</h2>
+            <p>Bagaimana AI kami menghubungkan Anda dengan pasangan yang relevan</p>
+        </div>
+        
+        <div class="flow-container">
+            <!-- Langkah 1 -->
+            <div class="flow-step">
+                <div class="step-icon">📝</div>
+                <h3>Isi Profil + Upload Foto</h3>
+                <p>Buat profil dan unggah foto terbaik Anda untuk proses penemuan pasangan lebih lanjut</p>
+            </div>
+            
+            <div class="flow-arrow">↓</div>
+            
+            <!-- Langkah 2 -->
+            <div class="flow-step">
+                <div class="step-icon">🧠</div>
+                <h3>Analisis Preferensi + Gaya Chat</h3>
+                <p>AI  mempelajari kepribadian, preferensi pasangan, dan gaya komunikasi Anda</p>
+            </div>
+            
+            <div class="flow-arrow">↓</div>
+            
+            <!-- Langkah 3 -->
+            <div class="flow-step">
+                <div class="step-icon">🤖</div>
+                <h3>Analisis Visual</h3>
+                <p>AI mengelompokkan foto berdasarkan karakteristik wajah</p>
+            </div>
+            
+            <div class="flow-arrow">↓</div>
+            
+            <!-- Langkah 4 -->
+            <div class="flow-step">
+                <div class="step-icon">⚙️</div>
+                <h3>Integrasi + Matchmaker Engine</h3>
+                <p>Kombinasi semua data untuk menghasilkan kecocokan terbaik</p>
+            </div>
+            
+            <div class="flow-arrow">↓</div>
+            
+            <!-- Langkah 5 -->
+            <div class="flow-step final-step">
+                <div class="step-icon">❤️</div>
+                <h3>Temukan Pasangan yang Relevan</h3>
+                <p>Temukan seseorang yang benar-benar cocok dengan preferensi dan kepribadian Anda</p>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
     <section class="features">
         <div class="container">
             <div class="section-header">
-                <h2>User Benefits</h2>
-                <p>How our technology translates to a better dating experience</p>
+                <h2>Keuntungan Pengguna</h2>
+                <p>Bagaimana teknologi kami menghadirkan pengalaman kencan yang lebih menyenangkan dan berkesan</p>
             </div>
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">⚡</div>
-                    <h3>Faster Connections</h3>
-                    <p>Our AI reduces the time to find compatible matches by 60% compared to traditional dating apps</p>
+                    <h3>Koneksi Lebih Cepat</h3>
+                    <p>AI mampu mengurangi waktu pencarian pasangan secara lebih kompatibel</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">🎯</div>
-                    <h3>Better Quality Matches</h3>
-                    <p>85% of our users report more meaningful conversations and connections</p>
+                    <h3>Kualitas Match Terbaik</h3>
+                    <p>Menemukan koneksi yang lebih bermakna dalam setiap interaksi</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">🛡️</div>
-                    <h3>Enhanced Safety</h3>
-                    <p>Advanced verification systems and behavioral analysis protect our community</p>
+                    <h3>Keamanan Terdepan</h3>
+                    <p>Sistem verifikasi canggih dan analisis perilaku yang melindungi komunitas kami dari berbagai ancaman digital</p>
                 </div>
             </div>
         </div>
@@ -795,8 +1084,7 @@
     <section class="team-section">
         <div class="container">
             <div class="section-header">
-                <h2>Meet Our Team</h2>
-                <p>The minds behind HeartLink's success</p>
+                <h2>Tim Kami</h2>
             </div>
             <div class="team-grid">
                 <div class="team-member">
@@ -866,6 +1154,43 @@
             </div>
         </div>
     </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <div class="company-details">
+                        <div class="company-detail-item">
+                            <div class="detail-icon">🏢</div>
+                            <div class="detail-content">
+                                <h4>Lokasi Kami</h4>
+                                <p>Universitas Airlangga</p>
+                                <p>Jl. IR Soekarno, Mulyorejo, Surabaya</p>
+                            </div>
+                        </div>
+                        <div class="company-detail-item">
+                            <div class="detail-content">
+                                <a href="https://maps.app.goo.gl/TGPSHPhVVBvbKKPK6" target="_blank" class="btn btn-feedback">
+                                    Buka Google Maps
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-feedback">
+                    <h4>Berikan Feedback Anda</h4>
+                    <p>Pendapat Anda sangat berharga untuk pengembangan HeartLink</p>
+                    <a href="https://forms.gle/zU1ZuVsQV25v2hVv9" target="_blank" class="btn btn-feedback">
+                        📝 Kirim Review & Feedback
+                    </a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 HeartLink Ltd. Semua hak cipta dilindungi.</p>
+            </div>
+        </div>
+    </footer>
+
     <script src="/static/js/main.js"></script>
 </body>
 </html>

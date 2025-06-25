@@ -3,7 +3,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from models import UserProfile, UserPreferencesSubset, UserPreferencesSimilarity, UserImageTest
 from sqlalchemy import and_
 
-def get_final_matches(user_id, top_n=20):
+def get_final_matches(user_id):
     try:
         user_profile = UserProfile.query.get(user_id)
         user_prefs_subset = UserPreferencesSubset.query.filter_by(user_id=user_id).first()
@@ -33,6 +33,7 @@ def get_final_matches(user_id, top_n=20):
                 if user_prefs_subset.preferred_age_max and age > user_prefs_subset.preferred_age_max:
                     reason = f"Too old: {age}"
             else:
+                continue
                 reason = "No birthdate"
 
             # Location filter
@@ -59,6 +60,13 @@ def get_final_matches(user_id, top_n=20):
                 print(f"[SKIP] Candidate {candidate.user_id} - {reason}")
                 continue
 
+            if user_image_test and candidate.cluster_id is not None:
+                preferred_clusters = user_image_test.get_preferred_cluster_ids()
+                if str(candidate.cluster_id) not in preferred_clusters:
+                    continue
+            elif user_image_test:
+                continue
+
             candidates.append(candidate)
 
         if not candidates:
@@ -66,8 +74,8 @@ def get_final_matches(user_id, top_n=20):
             return []
 
         user_vector = np.array(user_prefs_similarity.get_similarity_vector()).reshape(1, -1)
-
         results = []
+
         for candidate in candidates:
             candidate_prefs = UserPreferencesSimilarity.query.filter_by(user_id=candidate.user_id).first()
             if not candidate_prefs:
@@ -91,8 +99,9 @@ def get_final_matches(user_id, top_n=20):
             })
 
         results.sort(key=lambda x: x['total_score'], reverse=True)
-        print(f"[MATCHING] Returning top {len(results[:top_n])} matches for user {user_id}")
-        return results[:top_n]
+        print(f"[MATCHING] Returning top {len(results)} matches for user {user_id}")
+        return results
+  
 
     except Exception as e:
         import traceback

@@ -18,8 +18,6 @@
             position: relative;
         }
 
-
-
         .step-circle {
             width: 60px;
             height: 60px;
@@ -172,7 +170,7 @@
     <div class="main-container">
         <div class="preferences-card">
             <div class="card-header">
-                <h1 class="card-title">Ceritakan Tentang Diri Anda</h1>
+                <h1 class="card-title">Preferensi Pasangan Anda</h1>
                 <p class="card-subtitle">Bantu kami menemukan pasangan yang sempurna untuk Anda</p>
                 <span class="question-counter" id="questionCounter">Total 9 Pertanyaan</span>
             </div>
@@ -210,7 +208,7 @@
                             </div>
                             <div class="radio-item">
                                 <input type="radio" id="different_city" name="location_preference" value="different_city" {{ 'checked' if preferences and preferences.location_preference == 'different_city' else '' }}>
-                                <label for="different_city">Kota yang berbeda</label>
+                                <label for="different_city">Tidak terbatas lokasi</label>
                             </div>
                         </div>
                     </div>
@@ -281,7 +279,7 @@
                             </div>
                             <div class="radio-item">
                                 <input type="radio" id="different_religion" name="religion_preference" value="different_religion" {{ 'checked' if preferences and preferences.religion_preference == 'different_religion' else '' }}>
-                                <label for="different_religion">Agama yang berbeda</label>
+                                <label for="different_religion">Saya terbuka untuk perbedaan</label>
                             </div>
                         </div>
                     </div>
@@ -292,7 +290,7 @@
                 <div class="question-group">
                     <h3 class="question-title">Preferensi Pendidikan</h3>
                     <div class="question-item">
-                        <label class="question-label">Tingkat pendidikan minimum yang Anda cari</label>
+                        <label class="question-label">Tingkat pendidikan terakhir yang Anda cari</label>
                         <div class="form-group">
                             <select class="form-select text-input" name="education_preference">
                                 <option value="SMA" {{ 'selected' if preferences and preferences.education_preference == 'SMA' else '' }}>Minimal SMA/SMK</option>
@@ -307,7 +305,7 @@
             </div>
 
             <div class="form-navigation">
-                <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url_for('profile_setup') }}'">Kembali</button>
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url_for('profile_setup')}}'">Kembali</button>
                 <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Simpan Preferensi</button>
             </div>
         </form>
@@ -361,7 +359,9 @@
                 });
                 
                 // Add loading state and success message on submit
-                form.addEventListener('submit', function() {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault(); // Prevent default form submission
+                    
                     const submitBtn = document.querySelector('.btn-submit');
                     if (submitBtn) {
                         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Menyimpan...';
@@ -370,11 +370,53 @@
                     
                     // Show success message after a short delay to simulate processing
                     setTimeout(function() {
-                        showMessage('✅ Preferensi berhasil disimpan!', 'success');
+                        showSuccessMessage();
+                        
+                        // Submit the form after showing the notification
+                        setTimeout(function() {
+                            form.submit();
+                        }, 1500); // Wait 1.5 seconds before submitting the form
                     }, 500);
                 });
             }
         });
+        
+        function showSuccessMessage() { 
+            // Create success notification 
+            const notification = document.createElement('div'); 
+            notification.style.cssText = ` 
+                position: fixed; 
+                top: 20px; 
+                right: 20px; 
+                background: linear-gradient(135deg, #28a745, #20c997); 
+                color: white; 
+                padding: 15px 25px; 
+                border-radius: 10px; 
+                box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3); 
+                z-index: 9999; 
+                font-weight: 500; 
+                animation: slideIn 0.3s ease; 
+            `; 
+            notification.innerHTML = '✅ Preferensi berhasil disimpan! Menuju preferensi teks'; 
+            
+            // Add slide animation 
+            const style = document.createElement('style'); 
+            style.textContent = ` 
+                @keyframes slideIn { 
+                    from { transform: translateX(100%); opacity: 0; } 
+                    to { transform: translateX(0); opacity: 1; } 
+                } 
+            `; 
+            document.head.appendChild(style); 
+            
+            document.body.appendChild(notification); 
+            
+            // Remove notification after 3 seconds 
+            setTimeout(() => { 
+                notification.remove(); 
+                style.remove(); 
+            }, 3000); 
+        }
     </script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
