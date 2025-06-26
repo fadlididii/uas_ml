@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - HeartLink</title>
+    <title>Daftar - HeartLink</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="static/css/custom/register.css">
 </head>
 <body>
     <div class="register-container">
         <div class="register-form-wrapper">
-            <h2>Create Your Account</h2>
-            <p>Join HeartLink and find your perfect match</p>
+            <h2>Buat Akun Anda</h2>
+            <p>Bergabunglah dengan HeartLink dan temukan pasangan sempurna Anda</p>
             
             <form id="registerForm" class="register-form" action="{{ url_for('register') }}" method="POST">
                 <div class="form-group">
@@ -21,44 +21,46 @@
                         id="email" 
                         name="email" 
                         required
-                        placeholder="Enter your email"
+                        placeholder="Masukkan email Anda"
                     >
                 </div>
 
                 <div class="form-group position-relative">
-                    <label for="password">Password</label>
+                    <label for="password">Kata Sandi</label>
                     <input 
                         type="password" 
                         id="password" 
                         name="password" 
                         required
                         minlength="6"
-                        placeholder="Create a strong password (min 6 characters)"
+                        placeholder="Buat kata sandi yang kuat (min 6 karakter)"
                     >
                     <span class="password-toggle password-toggle-register">👁️</span>
                 </div>
 
                 <div class="form-group position-relative">
-                    <label for="confirm_password">Confirm Password</label>
+                    <label for="confirm_password">Konfirmasi Kata Sandi</label>
                     <input 
                         type="password" 
                         id="confirm_password" 
                         name="confirm_password" 
                         required
-                        placeholder="Repeat your password"
+                        placeholder="Ulangi kata sandi Anda"
                     >
                     <span class="password-toggle password-toggle-confirm">👁️</span>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Create Account</button>
+                <button type="submit" class="btn btn-primary">Buat Akun</button>
                 
                 <div class="form-note">
-                    <p><small>After registration, you'll be able to complete your profile with personal details and preferences.</small></p>
+                    <p><small>Setelah pendaftaran, Anda dapat melengkapi profil dengan data pribadi dan preferensi.</small></p>
                 </div>
             </form>
             <p class="login-link">
-                Already have an account? 
-                <a href="#" id="showLoginModal" class="text-primary">Login here</a>
+                Sudah memiliki akun? 
+                <a href="#" id="showLoginModal" class="text-primary">Masuk di sini</a>
+                <br>
+                <a href="{{ url_for('index') }}" class="text-primary">Kembali ke Beranda</a>
             </p>
         </div>
     </div>
@@ -67,7 +69,7 @@
     <div id="loginModal" class="modal-overlay hidden">
         <div class="modal-container">
             <div class="modal-header">
-                <h2>Login</h2>
+                <h2>Masuk</h2>
                 <button class="modal-close" id="closeLoginModal">&times;</button>
             </div>
             <form id="loginForm">
@@ -78,21 +80,21 @@
                         id="login_email" 
                         name="email" 
                         required
-                        placeholder="Enter your email"
+                        placeholder="Masukkan email Anda"
                     >
                 </div>
                 <div class="form-group position-relative">
-                    <label for="login_password">Password</label>
+                    <label for="login_password">Kata Sandi</label>
                     <input 
                         type="password" 
                         id="login_password" 
                         name="password" 
                         required
-                        placeholder="Enter your password"
+                        placeholder="Masukkan kata sandi Anda"
                     >
                     <span class="password-toggle password-toggle-login">👁️</span>
                 </div>
-                <button type="submit" class="btn btn-primary">Login</button>
+                <button type="submit" class="btn btn-primary">Masuk</button>
             </form>
         </div>
     </div>

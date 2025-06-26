@@ -46,32 +46,29 @@
                     <div class="col-md-4">
                         <div class="stat-item">
                             <div class="stat-number">{{ matches|length }}</div>
-                            <div class="stat-label">Total Matches</div>
+                            <div class="stat-label">Total Kecocokan</div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="stat-item">
                             <div class="stat-number">{{ ((matches|map(attribute='total_score')|sum) / matches|length)|round|int if matches else 0 }}%</div>
-                            <div class="stat-label">Avg Compatibility</div>
+                            <div class="stat-label">Rata-rata Kecocokan</div>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="stat-item">
                             <div class="stat-number">{{ matches|selectattr('total_score', '>', 80)|list|length }}</div>
-                            <div class="stat-label">High Matches</div>
+                            <div class="stat-label">Kecocokan Tinggi</div>
                         </div>
                     </div>
                 </div>
             </div>
             {% endif %}
 
-
-
-
-
             <div class="row justify-content-center">
                 <div class="col-lg-10">
                     {% if matches %}
+
                     <!-- Tambahkan di bagian filter-container, setelah filter matchLimit -->
                     <div class="filter-container mb-4">
                         <div class="filter-wrapper">
@@ -84,6 +81,7 @@
                                 <option value="50">50 Match</option>
                             </select>
                         </div>
+
                         
                         <div class="filter-wrapper ml-3">
                             <label for="distanceFilter" class="filter-label">Jarak:</label>
@@ -108,6 +106,8 @@
                             }
                         }
                     </script>
+
+                    </div>
                         {% for match in matches %}
                         <!-- Match Card for {{ match.first_name }} {{ match.last_name }} -->
                         <div class="match-card" onclick="flipCard(this)">
@@ -173,11 +173,13 @@
                                                 </div>
                                             </div>
                                             
+                                            {% if match.hobbies %}
                                             <div class="bio-section">
-                                                <i class="fas fa-quote-left" style="opacity: 0.5; margin-right: 0.5rem;"></i>
-                                                {{ match.bio }}
-                                                <i class="fas fa-quote-right" style="opacity: 0.5; margin-left: 0.5rem;"></i>
+                                                <h5><i class="fas fa-heartbeat"></i> Hobi & Minat</h5>
+                                                {{ match.hobbies }}
                                             </div>
+                                            {% endif %}
+                                            
                                         </div>
                                     </div>
                                 </div>
@@ -299,15 +301,6 @@
                                                 </div>
                                             </div>
                                             {% endif %}
-                                        </div>
-                                    </div>
-                                    {% endif %}
-                                    
-                                    {% if match.hobbies %}
-                                    <div class="detail-section">
-                                        <h5><i class="fas fa-heartbeat"></i> Hobi & Minat</h5>
-                                        <div class="bio-section">
-                                            {{ match.hobbies }}
                                         </div>
                                     </div>
                                     {% endif %}

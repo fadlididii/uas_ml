@@ -37,7 +37,7 @@
             <ul class="navbar-nav">
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-user-circle"></i> {{ current_user.profile.first_name if current_user.is_authenticated and current_user.profile else current_user.email if current_user.is_authenticated else 'Pengguna' }}
+                        <i class="fas fa-user-circle"></i> {{ current_user.profile.first_name if current_user.is_authenticated and current_user.profile else current_user.email if current_user.is_authenticated else '' }}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="{{ url_for('profile_setup') }}"><i class="fas fa-user-edit"></i> Edit Profil</a></li>
