@@ -2,8 +2,52 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from models import UserProfile, UserPreferencesSubset, UserPreferencesSimilarity, UserImageTest
 from sqlalchemy import and_
+from geopy.geocoders import Nominatim
+from geopy.distance import geodesic
+import time
 
-def get_final_matches(user_id):
+# Simple cache to store coordinates
+coordinates_cache = {}
+
+# Fungsi untuk mendapatkan koordinat dari lokasi
+def get_coordinates(location):
+    # Check cache first
+    if location in coordinates_cache:
+        return coordinates_cache[location]
+    
+    try:
+        # Increase timeout to 10 seconds and add a user agent
+        geolocator = Nominatim(user_agent="heartlink_app", timeout=10)
+        
+        # Add a small delay to respect rate limits
+        time.sleep(0.5)
+        
+        location_data = geolocator.geocode(location)
+        if location_data:
+            # Store in cache
+            coordinates = (location_data.latitude, location_data.longitude)
+            coordinates_cache[location] = coordinates
+            return coordinates
+        return None
+    except Exception as e:
+        print(f"Error getting coordinates: {e}")
+        return None
+
+# Fungsi untuk menghitung jarak antara dua lokasi
+def calculate_distance(location1, location2):
+    try:
+        coords1 = get_coordinates(location1)
+        coords2 = get_coordinates(location2)
+        
+        if coords1 and coords2:
+            distance = geodesic(coords1, coords2).kilometers
+            return distance
+        return None
+    except Exception as e:
+        print(f"Error calculating distance: {e}")
+        return None
+
+def get_final_matches(user_id, max_distance=None):
     try:
         user_profile = UserProfile.query.get(user_id)
         user_prefs_subset = UserPreferencesSubset.query.filter_by(user_id=user_id).first()
@@ -84,6 +128,14 @@ def get_final_matches(user_id):
 
             candidate_vector = np.array(candidate_prefs.get_similarity_vector()).reshape(1, -1)
             similarity = float(cosine_similarity(user_vector, candidate_vector)[0][0])
+            
+            # Hitung jarak jika max_distance ditentukan
+            distance = None
+            if max_distance is not None and user_profile.location and candidate.location:
+                distance = calculate_distance(user_profile.location, candidate.location)
+                # Skip kandidat jika jarak melebihi max_distance
+                if distance is not None and distance > max_distance:
+                    continue
 
             # Cluster distance score: inverse of distance, higher = better
             raw_distance = candidate.cluster_distance if candidate.cluster_distance is not None else 0
@@ -95,6 +147,8 @@ def get_final_matches(user_id):
                 'user_id': candidate.user_id,
                 'total_score': final_score,
                 'text_similarity': similarity,
+                'cluster_similarity': 1.0,
+                'distance': distance  # Tambahkan informasi jarak
                 'cluster_distance': cluster_distance
             })
 
