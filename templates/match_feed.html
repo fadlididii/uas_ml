@@ -65,22 +65,49 @@
             </div>
             {% endif %}
 
-            <div class="filter-container mb-4">
-                <div class="filter-wrapper">
-                    <label for="matchLimit" class="filter-label">Tampilkan:</label>
-                    <select id="matchLimit" class="filter-select" onchange="filterMatches(this.value)">
-                        <option value="0">Semua</option>
-                        <option value="5">5 Match</option>
-                        <option value="10" selected>10 Match</option>
-                        <option value="20">20 Match</option>
-                        <option value="50">50 Match</option>
-                    </select>
-                </div>
-            </div>
+
+
+
 
             <div class="row justify-content-center">
                 <div class="col-lg-10">
                     {% if matches %}
+                    <!-- Tambahkan di bagian filter-container, setelah filter matchLimit -->
+                    <div class="filter-container mb-4">
+                        <div class="filter-wrapper">
+                            <label for="matchLimit" class="filter-label">Tampilkan:</label>
+                            <select id="matchLimit" class="filter-select" onchange="filterMatches(this.value)">
+                                <option value="0">Semua</option>
+                                <option value="5">5 Match</option>
+                                <option value="10" selected>10 Match</option>
+                                <option value="20">20 Match</option>
+                                <option value="50">50 Match</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-wrapper ml-3">
+                            <label for="distanceFilter" class="filter-label">Jarak:</label>
+                            <select id="distanceFilter" class="filter-select" onchange="filterByDistance(this.value)">
+                                <option value="0" {{ 'selected' if not max_distance else '' }}>Semua</option>
+                                <option value="20" {{ 'selected' if max_distance == 20 else '' }}>< 20 km</option>
+                                <option value="50" {{ 'selected' if max_distance == 50 else '' }}>< 50 km</option>
+                                <option value="100" {{ 'selected' if max_distance == 100 else '' }}>< 100 km</option>
+                            </select>
+                        </div>
+                    </div>
+                                <!-- Tambahkan script JavaScript untuk filter jarak -->
+                    <script>
+                        // Fungsi untuk filter berdasarkan jarak
+                        function filterByDistance(distance) {
+                            const distanceValue = parseInt(distance);
+                            // Redirect ke halaman yang sama dengan parameter jarak
+                            if (distanceValue > 0) {
+                                window.location.href = "{{ url_for('match_feed') }}?max_distance=" + distanceValue;
+                            } else {
+                                window.location.href = "{{ url_for('match_feed') }}";
+                            }
+                        }
+                    </script>
                         {% for match in matches %}
                         <!-- Match Card for {{ match.first_name }} {{ match.last_name }} -->
                         <div class="match-card" onclick="flipCard(this)">
@@ -101,7 +128,7 @@
                                             </div>
                                             <div class="action-buttons">
                                                 {% if match.whatsapp %}
-                                                <a href="https://wa.me/{{ match.whatsapp }}" target="_blank" class="btn btn-whatsapp">
+                                                <a href="https://wa.me/{% if not match.whatsapp.startswith('62') %}62{% endif %}{{ match.whatsapp }}" target="_blank" class="btn btn-whatsapp">
                                                     <i class="fab fa-whatsapp"></i> WhatsApp
                                                 </a>
                                                 {% else %}
@@ -136,6 +163,9 @@
                                                 <div class="info-item">
                                                     <i class="fas fa-map-marker-alt"></i>
                                                     <span>{{ match.location }}</span>
+                                                    {% if match.distance %}
+                                                    <span class="distance-badge">({{ match.distance }} km)</span>
+                                                    {% endif %}
                                                 </div>
                                                 <div class="info-item">
                                                     <i class="fas fa-graduation-cap"></i>

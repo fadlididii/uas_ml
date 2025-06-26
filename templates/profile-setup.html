@@ -693,7 +693,8 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="whatsapp" class="form-label">WhatsApp</label>
-                            <input type="text" id="whatsapp" name="whatsapp" class="form-control" placeholder="Nomor WhatsApp" value="{{ profile_data.whatsapp if profile_data else '' }}">
+                            <input type="text" id="whatsapp" name="whatsapp" class="form-control" placeholder="Nomor WhatsApp (dengan awalan 62)" value="{{ profile_data.whatsapp if profile_data else '' }}">
+                            <small class="form-text text-muted">Contoh: 628123456789</small>
                         </div>
                     </div>
                     
@@ -823,6 +824,20 @@
     <script src="{{ url_for('static', filename='js/profile-setup.js') }}"></script>
     
     <script>
+        // Validasi input WhatsApp
+        document.getElementById('whatsapp').addEventListener('input', function(e) {
+            // Hapus semua karakter non-numerik
+            let value = e.target.value.replace(/[^0-9]/g, '');
+            
+            // Pastikan selalu dimulai dengan 62
+            if (!value.startsWith('62') && value.length > 0) {
+                value = '62' + value;
+            }
+            
+            // Update nilai input
+            e.target.value = value;
+        });
+        
         // Range input handler
         function updateRangeValue(fieldName) {
             const range = document.getElementById(fieldName);
@@ -938,7 +953,12 @@
             if (whatsapp) {
                 previewContact.style.display = 'flex';
                 const link = previewContact.querySelector('a');
-                link.href = `https://wa.me/${whatsapp.replace(/[^0-9]/g, '')}`;
+                // Pastikan nomor WhatsApp selalu memiliki awalan 62 untuk link wa.me
+                let waNumber = whatsapp.replace(/[^0-9]/g, '');
+                if (!waNumber.startsWith('62')) {
+                    waNumber = '62' + waNumber;
+                }
+                link.href = `https://wa.me/${waNumber}`;
                 link.querySelector('span').textContent = whatsapp;
             } else {
                 previewContact.style.display = 'none';

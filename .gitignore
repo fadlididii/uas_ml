@@ -27,6 +27,7 @@ env/
 ENV/
 config.py
 /migrations
+env310/
 
 # IDE
 .idea/

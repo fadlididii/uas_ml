@@ -436,8 +436,11 @@ def match_feed():
     user_id = session['user_id']
     user = User.query.get(user_id)
     
+    # Get distance filter from query parameter
+    max_distance = request.args.get('max_distance', type=int)
+    
     # Get comprehensive matches (preferences + similarity + cluster)
-    matches = find_comprehensive_matches(user_id)
+    matches = find_comprehensive_matches(user_id, max_distance)
     
     # Get user profiles for the matches
     match_profiles = []
@@ -448,6 +451,12 @@ def match_feed():
             profile_data['total_score'] = round(match_data['total_score'] * 100, 1)
             profile_data['text_similarity'] = round(match_data['text_similarity'] * 100, 1)
             profile_data['cluster_similarity'] = round(match_data['cluster_similarity'] * 100, 1)
+            
+            # Tambahkan informasi jarak jika tersedia
+            if 'distance' in match_data and match_data['distance'] is not None:
+                profile_data['distance'] = round(match_data['distance'], 1)
+            else:
+                profile_data['distance'] = None
             
             # Format date of birth for display
             if profile_data.get('date_of_birth'):
@@ -498,7 +507,7 @@ def match_feed():
     
     return render_template('match_feed.html', user=user, matches=match_profiles, now=now, 
                           total_matches=len(match_profiles), avg_score=int(avg_score), 
-                          high_matches=high_matches)
+                          high_matches=high_matches, max_distance=max_distance)
 
 @app.route('/api/profile/<user_id>', methods=['GET'])
 @login_required
@@ -645,15 +654,15 @@ def image_test():
     return render_template('image_test.html', target_gender=user_gender, existing_test=existing_test)
 
 
-def find_comprehensive_matches(user_id):
+def find_comprehensive_matches(user_id, max_distance=None):
     """
     Find matches using the new staged matching system
     """
     try:
         from matching_system import get_final_matches
         
-        # Use the new staged matching system
-        final_matches = get_final_matches(user_id)
+        # Use the new staged matching system with distance filter
+        final_matches = get_final_matches(user_id, max_distance)
         
         if not final_matches:
             print(f"No matches found for user {user_id}")
