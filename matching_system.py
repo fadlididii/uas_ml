@@ -148,8 +148,8 @@ def get_final_matches(user_id, max_distance=None):
                 'total_score': final_score,
                 'text_similarity': similarity,
                 'cluster_similarity': 1.0,
-                'distance': distance  # Tambahkan informasi jarak
-                'cluster_distance': cluster_distance
+                'distance': distance,
+                'cluster_distance': cluster_distance    
             })
 
         results.sort(key=lambda x: x['total_score'], reverse=True)
